@@ -4,20 +4,25 @@ requireX
 Loading external javascript dynamicly.
 
 Example:
-    require({
-      modules : [
-        {module:'jquery.min',direction:'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/'},
-        {module:'jquery-ui.min',direction:'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/'},
-        {module:'mootools-yui-compressed',direction:'http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/'}
-      ],
-      direction : 'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/',
-      onLoad : function(){
-        console.log(isLoaded('jquery.min.js'));
-      }
-    });
+========
+
+	require({
+		modules : [
+			{module:'jquery.min',direction:'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/'},
+			{module:'jquery-ui.min',direction:'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/'},
+			{module:'mootools-yui-compressed',direction:'http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/'}
+		],
+		direction : 'http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/',
+		onLoad : function(){
+			console.log(isLoaded('jquery.min.js'));
+		}
+	});
+
 
 API:
-  require (@object) return (void)
+========
+
+	require (@object) return (void)
 		How to:
 			1.) 
 				require({
