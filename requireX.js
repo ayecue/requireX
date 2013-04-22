@@ -1,7 +1,7 @@
 /**
  *	Name: requireX.js
  *	Author: swe
- *	Version: 0.0.0.5
+ *	Version: 0.0.0.8
  *
  *
  *	Description:
@@ -86,6 +86,9 @@
 	var LOADED = {},LOADING = {},
 		DOC = document,
 		HEAD = null,
+		/**
+		 *	Include file
+		 */
 		include = function(file,callback){
 			if (!HEAD) HEAD = DOC.getElementsByTagName('head');
 		
@@ -94,44 +97,93 @@
 			script.async = false;
 			script.src = file;
 
-			script.onload = script.onreadystatechange = function( _, cancel ) {
-				if ( cancel || !script.readyState || /loaded|complete/i.test( script.readyState ) ) 
+			script.onload = script.onreadystatechange = function( _, failure ) {
+				if ( failure || !script.readyState || /loaded|complete/i.test( script.readyState ) ) 
 				{
 					script.onload = script.onreadystatechange = null;
 					if ( script.parentNode ) script.parentNode.removeChild( script );
 					script = null;
 
 					if (callback)
-						callback(!cancel);
+						callback(!failure);
 				}
 			}
+			
+			script.onerror = function(_){
+				script.onload(_,true);
+			};
 			
 			if (HEAD && HEAD[0])
 				HEAD[0].appendChild(script);
 		},
-		convert = function(d){
-			var name,direction;
+		/**
+		 *	Filter extensions
+		 */
+		filter = function(fn,dn){
+			//Request Filter
+			var r;
+
+			fn = fn.replace(/\?[^?]+$/,function(s){
+				r="&" + s.substring(1); 
+				return '';
+			});
 			
-			if (d.direction)
+			//File Filter
+			if (! /.js$/i.test(fn)) fn+='.js';
+			
+			return {
+				request : r,
+				file : fn,
+				direction : dn
+			};
+		},
+		/**
+		 *	Convert datas
+		 */
+		convert = function(f,d){
+			var fn,dn;
+		
+			if (d)
 			{
-				name = d.file;
-				direction = d.direction;
+				fn = f;
+				dn = d;
 			}
 			else
 			{
 				try {
-					name = d.file.match(/([^\/?]+)(?:[^\/]*)$/)[1];
-					direction = d.file.match(/(.*?)(?:[^\/?]+)(?:[^\/]*)$/)[1];
+					fn = f.match(/([^\/]+)$/)[1];
+					dn = f.match(/(.*?)(?:[^\/]+)$/)[1];
 				} catch(e) {
-					name = d.file;
-					direction = '/';
+					fn = f;
+					dn = '/';
 				}
 			}
 			
-			return {
-				file : name,
-				direction : direction
-			};
+			return filter(fn,dn);
+		},
+		/**
+		 *	Add file to queue
+		 */
+		add = function(_,f,b){
+			var c = convert(f[MODULE] || f, f[DIRECTION] || b || null);
+			
+			if (LOADING[c.file] = (!LOADED[c.file] && !LOADING[c.file]))
+				_.push(c);
+		},
+		/**
+		 *	Process data
+		 */
+		process = function(f,b){
+			if (! /^(string|object)$/.test(typeof f)) return;
+		
+			var _ = [];
+		
+			if (f instanceof Array)
+				for(var i = 0, l = f.length; i<l; add(_,f[i++],b));
+			else
+				add(_,f,b);
+			
+			return _;
 		};
 	
 	/**
@@ -144,16 +196,7 @@
 			base = config[DIRECTION] || false,
 			onprogress = config[ONPROGRESS] || false,
 			queueing = false,
-			stack = [],
-			add = function(d){
-				var converted = convert(d);
-			
-				if (!LOADED[converted.file] && !LOADING[converted.file])
-				{
-					LOADING[converted.file] = true;
-					stack.push(converted);
-				}
-			},
+			stack = process(files,base),
 			queue = function(){
 				var d = stack.shift();
 				
@@ -165,11 +208,11 @@
 					queueing = false;
 					
 					return;
-				} 
+				}
 				
 				if (!LOADED[d.file])
 				{
-					include(d.direction+d.file+'.js?_='+(new Date().getTime()),function(success){
+					include(d.direction+d.file+'?_='+(new Date().getTime()) + (d.request || ''),function(success){
 						LOADING[d.file] = false;
 						LOADED[d.file] = success;
 						
@@ -178,29 +221,6 @@
 					});
 				}
 			};
-			
-		if (files instanceof Array)
-		{
-			for (var index = 0 ,length = files.length; index<length; index++)
-				add({
-					file : files[index][MODULE] || files[index], 
-					direction : files[index][DIRECTION] || base || null
-				});
-		}
-		else if (typeof files == 'object')
-		{
-			add({
-				file : files[MODULE] || files, 
-				direction : files[DIRECTION] || base || null
-			});
-		}
-		else if (typeof files == 'string')
-		{
-			add({
-				file : files, 
-				direction : base || null
-			});
-		}
 			
 		return {
 			load : function(){
