@@ -212,7 +212,7 @@
 						LOADING[d.file] = false;
 						LOADED[d.file] = success;
 						
-						if (onprogress) onprogress(success);
+						if (onprogress) onprogress(d.file,d.direction,success);
 						queue();
 					});
 				}
