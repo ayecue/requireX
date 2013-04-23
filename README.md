@@ -61,3 +61,9 @@ API:
 	isLoading (@string) return (boolean)
 		How to:
 			isLoading(filename);
+			
+	onLoaded (@string,@callback) return (void)
+		How to:
+			onLoaded('jquery.min',function(){
+				console.log('loaded');
+			});
