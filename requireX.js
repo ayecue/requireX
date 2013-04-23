@@ -1,7 +1,7 @@
 /**
  *	Name: requireX.js
  *	Author: swe
- *	Version: 0.0.1.0
+ *	Version: 0.0.1.2
  *
  *
  *	Description:
@@ -50,6 +50,14 @@
  *			How to:
  *				isLoading(filename);
  *
+ *
+ *		onLoaded (@string,@callback) return (void)
+ *			How to:
+ *				onLoaded('jquery.min',function(){
+ *					console.log('loaded');
+ *				});
+ *
+ *
  *	Example:
  *			require({
  *				modules : [
@@ -74,6 +82,7 @@
 	var NAME = 'require',
 		ISLOADED = 'isLoaded',
 		ISLOADING = 'isLoading',
+		ONLOADED = 'onLoaded',
 		MODULE = 'module',
 		MODULES = 'modules',
 		DIRECTION = 'direction',
@@ -83,9 +92,25 @@
 	/**
 	 *	STATIC
 	 */
-	var LOADED = {},LOADING = {},
+	var LOADED = {},LOADING = {},LOADEDEXEC = {},
 		DOC = document,
 		HEAD = null,
+		/**
+		 *	On loaded event
+		 */
+		onloaded = function(f){
+			var ex = LOADEDEXEC[f];
+			
+			if (ex)
+			{
+				var func;
+			
+				while (func = ex.shift())
+					func(f);
+					
+				LOADEDEXEC[f] = null;
+			}
+		},
 		/**
 		 *	Include file
 		 */
@@ -165,6 +190,8 @@
 			
 			if (LOADING[c.file] = (!LOADED[c.file] && !LOADING[c.file]))
 				_.push(c);
+			else
+				onloaded(c.file);
 		},
 		/**
 		 *	Process data
@@ -210,12 +237,14 @@
 				{
 					include(d.direction+d.file+'?_='+(new Date().getTime()) + (d.request || ''),function(success){
 						LOADING[d.file] = false;
-						LOADED[d.file] = success;
+						
+						if (LOADED[d.file] = success)
+							onloaded(d.file);
 						
 						if (onprogress) onprogress(d.file,d.direction,success);
 						queue();
 					});
-				}
+				}	
 			};
 			
 		return {
@@ -235,7 +264,7 @@
 	/**
 	 * API
 	 */
-	window[NAME] = function(config){
+	window[NAME] = function(config){	
 		var l = new LOADER(config,function(){
 			if (config[ONLOAD])
 				config[ONLOAD]();
@@ -251,5 +280,13 @@
 	};
 	window[ISLOADED] = function(f){
 		return !!LOADED[filter(f).file];
+	};
+	window[ONLOADED] = function(f,callback){
+		var fn = filter(f).file;
+		
+		if (!LOADEDEXEC[fn]) 
+			LOADEDEXEC[fn] = [];
+			
+		LOADEDEXEC[fn].push(callback);
 	};
 }).call(this);
