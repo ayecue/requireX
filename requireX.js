@@ -1,7 +1,7 @@
 /**
  *	Name: requireX.js
  *	Author: swe
- *	Version: 0.0.0.8
+ *	Version: 0.0.0.9
  *
  *
  *	Description:
@@ -122,11 +122,7 @@
 		filter = function(fn,dn){
 			//Request Filter
 			var r;
-
-			fn = fn.replace(/\?[^?]+$/,function(s){
-				r="&" + s.substring(1); 
-				return '';
-			});
+			fn = fn.replace(/\?([^?]*)$/,function(_,m){r="&"+m; return '';});
 			
 			//File Filter
 			if (! /.js$/i.test(fn)) fn+='.js';
