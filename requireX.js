@@ -1,7 +1,7 @@
 /**
  *	Name: requireX.js
  *	Author: swe
- *	Version: 0.0.0.9
+ *	Version: 0.0.1.0
  *
  *
  *	Description:
@@ -212,7 +212,7 @@
 						LOADING[d.file] = false;
 						LOADED[d.file] = success;
 						
-						if (onprogress) onprogress();
+						if (onprogress) onprogress(success);
 						queue();
 					});
 				}
@@ -246,10 +246,10 @@
 		
 		l.load();
 	};
-	window[ISLOADING] = function(file){
-		return !!LOADING[file];
+	window[ISLOADING] = function(f){
+		return !!LOADING[filter(f).file];
 	};
-	window[ISLOADED] = function(file){
-		return !!LOADED[file];
+	window[ISLOADED] = function(f){
+		return !!LOADED[filter(f).file];
 	};
 }).call(this);
