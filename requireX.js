@@ -1,7 +1,7 @@
 /**
  *	Name: requireX.js
  *	Author: swe
- *	Version: 0.0.1.2
+ *	Version: 0.0.1.3
  *
  *
  *	Description:
@@ -190,8 +190,6 @@
 			
 			if (LOADING[c.file] = (!LOADED[c.file] && !LOADING[c.file]))
 				_.push(c);
-			else
-				onloaded(c.file);
 		},
 		/**
 		 *	Process data
@@ -284,8 +282,8 @@
 	window[ONLOADED] = function(f,callback){
 		var fn = filter(f).file;
 		
-		if (!LOADEDEXEC[fn]) 
-			LOADEDEXEC[fn] = [];
+		if (!!LOADED[fn]) return callback(fn);
+		if (!LOADEDEXEC[fn]) LOADEDEXEC[fn] = [];
 			
 		LOADEDEXEC[fn].push(callback);
 	};
