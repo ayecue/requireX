@@ -165,7 +165,10 @@
 	 *
 	 */
 	function url(url){			
-		extend(this,!!patternUrl.exec(url) && (function(){
+		extend(this,{
+			host : 'local',
+			ext : 'js'
+		},!!patternUrl.exec(url) && (function(){
 			var e = unite(['protocol','prefix',null,'uri'],rx,urlrx);
 		
 			return extend(e,!!patternPath.exec(rx.$3) && (function(){
@@ -375,9 +378,12 @@
 					if (failure || !state || /loaded|complete/i.test( state ) ) 
 					{
 						clIntv(interval);
-						style = style.onload = style.onreadystatechange = null;
+						style.onload = style.onreadystatechange = null;
+						!failure && (failure = !!(browser.MSIE && /loaded/.test( state )));
+						!!failure && !!style.parentNode && style.parentNode.removeChild( style );
+						style = null;
 
-						ready(!!failure || !!(browser.MSIE && /loaded/.test( state )));
+						ready(!!failure);
 					}
 				},
 				onerror = function(_){
