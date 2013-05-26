@@ -2,54 +2,6 @@
 	<head>
 		<!--<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>-->
 		<script type="text/javascript" src="requireX.js"></script>
-		<script type="text/javascript">
-			require([
-				'!#$;http://nothing.todo.here/ajax/libs/jquery/1.9.1/jquery.min.js',
-				'!-$;!#$.fn;http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
-				'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
-				'https://developers.google.com/_static/css/screen.css',
-				'style.css',
-				'http://www.w3schools.com/images/w3schoolslogoNEW310113.gif'
-			]).then(function(a,b,c,d,e,f){
-				$("div")
-					.append('<p class="new">>> call require()</p>')
-					.append('<p>Loaded: '+!a.failure+' ('+a.path.file+') from '+a.path.host+'</p>')
-					.append('<p>Loaded: '+!b.failure+' ('+b.path.file+') from '+b.path.host+'</p>')
-					.append('<p>Loaded: '+!c.failure+' ('+c.path.file+') from '+c.path.host+'</p>')
-					.append('<p>Loaded: '+!d.failure+' ('+d.path.file+') from '+d.path.host+'</p>')
-					.append('<p>Loaded: '+!e.failure+' ('+e.path.file+') from '+e.path.host+'</p>')
-					.append('<p>Loaded: '+!f.failure+' ('+f.path.file+') from '+f.path.host+'</p>');
-			}).next([
-				'http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js'
-			]).then(function(a){
-				$("div")
-					.append('<p class="new">>> call require()</p>')
-					.append('<p>Loaded: '+!a.failure+' ('+a.path.file+') from '+a.path.host+'</p>');
-			});
-			
-			require([
-				'http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js'
-			]).then(function(a){
-				$("div")
-					.append('<p class="new">>> call require()</p>')
-					.append('<p>Loaded: '+!a.failure+' ('+a.path.file+') from '+a.path.host+'</p>');
-				
-				require([
-					'http://ajax.googleapis.com/ajax/libs/webfont/1.4.2/webfont.js'
-				]).then(function(a){
-					$("div")
-						.append('<p>Loaded: '+!a.failure+' ('+a.path.file+') from '+a.path.host+'</p>');
-				});
-			});
-			
-			waitForFiles('jquery.min.js','webfont.js','style.css').then(function(a,b,c){
-				$("div")
-					.append('<p class="new">>> call waitForFiles()</p>')
-					.append('<p>Loaded: '+!a.failure+' ('+a.path.file+') from '+a.path.host+'</p>')
-					.append('<p>Loaded: '+!b.failure+' ('+b.path.file+') from '+b.path.host+'</p>')
-					.append('<p>Loaded: '+!c.failure+' ('+c.path.file+') from '+c.path.host+'</p>');
-			});
-		</script>
 		<style type="text/css">
 			body {
 				position: relative;
@@ -75,7 +27,55 @@
 			}
 		</style>
 	</head>
-	<html>
+	<body>
 		<div></div>
-	</html>
+		<script type="text/javascript">
+			require([
+				'!#$;http://nothing.todo.here/ajax/libs/jquery/1.9.1/jquery.min.js',
+				'!-$;!#$.fn;http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+				'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+				'https://developers.google.com/_static/css/screen.css',
+				'style.css',
+				'http://www.w3schools.com/images/w3schoolslogoNEW310113.gif'
+			]).always(function(a,b,c,d,e,f){
+				$("div")
+					.append('<p class="new">>> call require()</p>')
+					.append('<p>Loaded: '+a.success+' ('+a.path.file+') from '+a.path.host+'</p>')
+					.append('<p>Loaded: '+b.success+' ('+b.path.file+') from '+b.path.host+'</p>')
+					.append('<p>Loaded: '+c.success+' ('+c.path.file+') from '+c.path.host+'</p>')
+					.append('<p>Loaded: '+d.success+' ('+d.path.file+') from '+d.path.host+'</p>')
+					.append('<p>Loaded: '+e.success+' ('+e.path.file+') from '+e.path.host+'</p>')
+					.append('<p>Loaded: '+f.success+' ('+f.path.file+') from '+f.path.host+'</p>');
+			}).next([
+				'http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js'
+			]).then(function(a){
+				$("div")
+					.append('<p class="new">>> call require()</p>')
+					.append('<p>Loaded: '+a.success+' ('+a.path.file+') from '+a.path.host+'</p>');
+			});
+			
+			require([
+				'http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js'
+			]).then(function(a){
+				$("div")
+					.append('<p class="new">>> call require()</p>')
+					.append('<p>Loaded: '+a.success+' ('+a.path.file+') from '+a.path.host+'</p>');
+				
+				require([
+					'http://ajax.googleapis.com/ajax/libs/webfont/1.4.2/webfont.js'
+				]).then(function(a){
+					$("div")
+						.append('<p>Loaded: '+a.success+' ('+a.path.file+') from '+a.path.host+'</p>');
+				});
+			});
+			
+			waitForFiles('jquery.min.js','webfont.js','style.css').always(function(a,b,c){
+				$("div")
+					.append('<p class="new">>> call waitForFiles()</p>')
+					.append('<p>Loaded: '+a.success+' ('+a.path.file+') from '+a.path.host+'</p>')
+					.append('<p>Loaded: '+b.success+' ('+b.path.file+') from '+b.path.host+'</p>')
+					.append('<p>Loaded: '+c.success+' ('+c.path.file+') from '+c.path.host+'</p>');
+			});
+		</script>
+	</body>
 </html>
