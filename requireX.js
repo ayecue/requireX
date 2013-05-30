@@ -1,72 +1,90 @@
 /**
- *	@name: RequireX
- *	@version: 0.5.0.0
- *	@author: swe
+ *	requireX - Load external images, stylesheets and javascript (AMD)
+ *	--
  *
- *	Todo:
- *	=========================
- *
- *	- clean code up
- *	- add some more functions
- *
- *
- *	What does this script do?
- *	=========================
- *
- *	This module load JavaScript, Stylesheets and Images. Perfect for writing modular JavaScript.
+ *	@package			requireX
+ *	@version 			0.8.0.0
+ *	@author 			swe <soerenwehmeier@googlemail.com>
  *
  */
 (function(global){
 	'use strict';
 
 	var /**
-		 *	Vars
+		 *	Variables
+		 *	--
 		 */
-		//Informations
-		funcs = ['require','define','isLoaded','isPending','waitForFiles'],
-		author = 'swe',
-		version = '1.0.0.0',
 		
-		//Shortcut
-		doc = document,
-		styles = doc.styleSheets,
-		regexp = RegExp,
-		delay = setTimeout,
-		intv = setInterval,
-		clIntv = clearInterval,
-		slice = [].slice,
+		/**
+		 *	General Globals
+		 */
+		funcs 	= ['require','define','isLoaded','isPending','waitForFiles'],
+		author 	= 'swe',
+		version	= '1.0.0.0',
 		
-		//Timeouts
-		styleTimeout = 1000,
-		waitForTimeout = 1000,
+		/**
+		 *	Global Shortcuts
+		 */
+		doc 	= document,
+		styles 	= doc.styleSheets,
+		regexp 	= RegExp,
+		delay 	= setTimeout,
+		intv 	= setInterval,
+		clIntv 	= clearInterval,
+		slice 	= [].slice,
 		
-		//Patterns
-		patternUrl 		= /^(https?:\/\/)?(?:(www)\.)?([^?]+)(.*)$/i,
-		patternPath 	= /^([^\/]+(?=\/))?(.*\/)?(.+?)(?:\.([^\.]+))?$/,
+		/**
+		 *	Retry amount
+		 */
+		styleTimeout 	= 1000,
+		waitForTimeout 	= 1000,
+		
+		/**
+		 *	Regular Expression pattern
+		 */
+		patternPrefix	= /^(https?:\/\/)?(?:(www)\.)?(.*)/i,
+		patternDomain	= /^([^\/?]+)\/?([^?]*)\??(.*)/i,
+		patternDirname	= /^([^?]*)\??(.*)/i,
+		patternFile		= /(?:\/|^)(.*?)\/?([^\/]+?)(?:\.([^\.]*))?$/,
 		patternExec 	= ['!([#\\-])([^;]+?);','g'],
 		
 		/**
 		 *	Static Functions
+		 *	--
 		 */
-		forEach = function(o,c,r){
-			var t, d = {result:r,skip:false};
 		
-			if (typeof o == 'function')
+		/**
+		 * 	Loops through arrays and objects.
+		 * 
+		 * 	@param Object/Array obj Current context to go through
+		 *	@param Function callback Current char
+		 * 	@param Object pre Predefine result value (optional)
+		 * 	@return result object
+		 */
+		forEach = function(obj,callback,pre){
+			if (obj == null)
 			{
-				while ((t = o.call(d)) && !d.skip)
+				return null;
+			}
+		
+			var t, d = {result:pre,skip:false};
+		
+			if (typeof obj == 'function')
+			{
+				while ((t = obj.call(d)) && !d.skip)
 				{
-					c.call(d,t);
+					callback.call(d,t);
 				}
 			}
-			else if (t = o.length)
+			else if (t = obj.length)
 			{
-				for (var k = 0; k < t && !d.skip; c.call(d,k,o[k++]));        
+				for (var k = 0; k < t && !d.skip; callback.call(d,k,obj[k++]));        
 			}
 			else
 			{
-				for (var k in o)
+				for (var k in obj)
 				{
-					c.call(d,k, o[k]);
+					callback.call(d,k, obj[k]);
 				
 					if (d.skip)
 					{
@@ -77,6 +95,13 @@
 			
 			return d.result;
 		},
+		
+		/**
+		 * 	Convert objects to an array.
+		 * 
+		 * 	@param Object obj Object to convert
+		 * 	@return converted object
+		 */
 		toArray = slice ? function(obj){
 			return slice.call(obj);
 		} : function(obj){
@@ -84,9 +109,24 @@
 				this.result.unshift(item);
 			},[]);
 		},
+		
+		/**
+		 * 	Zero timeout.
+		 * 
+		 * 	@param Function func Callback function
+		 */
 		quickDelay = function(func){
 			return delay(func,0);
 		},
+		
+		/**
+		 * 	Unite to array to an object.
+		 * 
+		 * 	@param Array keys Later object keys
+		 *	@param Array values Later object values
+		 * 	@param Function get Modify loop pointer (optional)
+		 * 	@return united object
+		 */
 		unite = function(keys,values,get) {
 			!!get || (get = function(i){return i;});
 			
@@ -94,6 +134,13 @@
 				!!item && (this.result[item] = values[get(index)]);
 			},{});
 		},
+		
+		/**
+		 * 	Extend multiple objects.
+		 * 
+		 * 	@param Object[] All objects which you want to unite
+		 * 	@return extended object
+		 */
 		extend = function() {
 			var args = toArray(arguments),
 				last = args.length - 1,
@@ -108,6 +155,14 @@
 				},this.result));
 			},src);
 		},
+		
+		/**
+		 * 	Get index of the first value of an object as soon the given type is equal to that value.
+		 * 
+		 * 	@param Object obj Object you want to get searched
+		 *	@param String type Type you want to be found
+		 * 	@return index of the found value
+		 */
 		getFirstOfType = function getFirstOfType(obj,type) {
 			return forEach(obj,function(index,item){
 				if (getType(item) == type)
@@ -117,9 +172,24 @@
 				}
 			});
 		},
+		
+		/**
+		 * 	Get the type of an object.
+		 * 
+		 * 	@param Object obj Object you want to know the type of
+		 * 	@return type of object
+		 */
 		getType = function(obj){
 			return !!Core && !!Core.typeifier ? Core.typeifier.compile(obj) : typeof obj;
 		},
+		
+		/**
+		 * 	This add all known types to an static object.
+		 *
+		 * 	@package		requireX/extTypes
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
+		 */
 		extTypes = (new (function(){
 			var self = this;
 			
@@ -136,7 +206,11 @@
 		.add(['jpg','jpeg','gif','png'],'image'),
 	
 		/**
-		 *	Class Internal
+		 * 	Basic class creator.
+		 *
+		 * 	@package		requireX/Class
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		Class = function(){
 			return forEach(arguments,function(_,module){
@@ -170,12 +244,29 @@
 		},
 	
 		/**
-		 *	Type Internal
+		 * 	Handling object types.
+		 *
+		 * 	@package		requireX/Type
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		Type = new Class({
+			/**
+			 * 	Constructor
+			 * 
+			 * 	@param Object handler Special handler for different object subtypes
+			 * 	@return Type
+			 */
 			create : function(handler){
 				this.handler = handler;
 			},
+			
+			/**
+			 * 	Compile native object types to their subtype.
+			 * 
+			 * 	@param Object obj Object you want to know the type of
+			 * 	@return Type
+			 */
 			compile : function(obj){
 				var type = typeof obj,
 					func = this.handler[type];
@@ -185,48 +276,243 @@
 		}),
 	
 		/**
-		 *	URL Internal
+		 * 	Handle dynamic string with changing parts.
 		 *
-		 *	Create an object with all important informations about an url.
+		 * 	@package		requireX/FlexString
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
+		 */
+		FlexString = new Class({
+			/**
+			 * 	Constructor
+			 * 
+			 * 	@param String string String you want to convert to a FlexString
+			 *	@param String/Array delimiter Set the delimiter to split the string
+			 * 	@return FlexString
+			 */
+			create : function(string,delimiter){
+				var isArray = getType(delimiter) == 'array',
+					current = isArray ? delimiter[0] : delimiter,
+					next = isArray ? delimiter.slice(1) : null;
+				
+				extend(this,{
+					stack : forEach((string || '').split(current),function(_,item){
+						item.length && this.result.push(!!next && !!next.length ? new FlexString(item,next) : item);
+					},[]),
+					delimiter : current,
+					next : next
+				});
+			},
+			
+			/**
+			 * 	Convert FlexString to a normal string.
+			 * 
+			 * 	@return Full string
+			 */
+			get : function(){
+				return forEach(this.stack,function(_,item){
+					this.result.push(item instanceof FlexString ? item.get() : item);
+				},[]).join(this.delimiter);
+			},
+			
+			/**
+			 * 	Add a string in front of the FlexString.
+			 * 
+			 * 	@param String string String you want to add
+			 */
+			unshift : function(string){
+				this.stack.unshift(!!this.next ? new FlexString(string,this.next) : string);
+			},
+			
+			/**
+			 * 	Add a string on the end of FlexString.
+			 * 
+			 * 	@param String string String you want to add
+			 */
+			push : function(string){
+				this.stack.push(!!this.next ? new FlexString(string,this.next) : string);
+			},
+			
+			/**
+			 * 	Concat two FlexStrings.
+			 * 
+			 * 	@param FlexString fstring FlexString you want to concat
+			 */
+			concat : function(fstring){
+				fstring instanceof FlexString && this.stack.concat(fstring.stack);
+			},
+			
+			/**
+			 * 	Morph two FlexStrings.
+			 * 
+			 * 	@param FlexString fstring FlexString you want to morph
+			 */
+			morph : function(fstring){
+				fstring instanceof FlexString && (this.stack = fstring.stack.concat(this.stack));
+			}
+		}),
+		
+		/**
+		 * 	For better handling of all the file pathes.
 		 *
+		 * 	@package		requireX/Url
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		Url = new Class({
 			static : {
-				filter : function(i){
-					return '$'+(i+1);
-				},
+				/**
+				 * 	All supported files types.
+				 */
 				types : extTypes
 			},
+			
+			/**
+			 * 	Constructor
+			 * 
+			 * 	@param String url String which get converted to Url Object
+			 * 	@return Url
+			 */
 			create : function(url){
-				extend(this,{
-					host : 'local',
-					ext : 'js'
-				},!!patternUrl.exec(url) && (function(){
-					var e = unite(['protocol','prefix',null,'uri'],regexp,Url.filter);
+				var self = this,
+					parts = url.match(patternPrefix).slice(1),
+					stack = extend({ext : 'js'},{
+						protocol : parts.shift(),
+						prefix : parts.shift()
+					});
 				
-					return extend(e,!!patternPath.exec(regexp.$3) && (function(){
-						return extend((e.protocol || e.prefix) ? unite(['host','dir'],regexp,Url.filter) : {
-							path 	: (regexp.$1 || '') + (regexp.$2 || '')
-						}, unite([null,null,'file','ext'],regexp,Url.filter),false);
-					})(),false);
-				})(),{full : url},false);
+				parts = parts.shift().match(!!stack.http || !!stack.prefix ? patternDomain : patternDirname).slice(1);
+
+				extend(stack,{
+					uri : new FlexString(parts.pop(),['&','=']),
+					path : parts.pop(),
+					host : parts.pop()
+				});
 				
-				this.fullext = this.ext ? Url.types[this.ext.toLowerCase()] : 'script';
+				if (!!stack.path && stack.path.length)
+				{
+					parts = stack.path.match(patternFile);
+					
+					extend(stack,{
+						ext : parts.pop(),
+						file : parts.pop(),
+						dir : new FlexString(parts.pop(),['/'])
+					});
+				}
+				
+				extend(self.stack = stack,{
+					fullext : stack.ext ? Url.types[stack.ext.toLowerCase()] : 'script'
+				});
+			},
+			
+			/**
+			 * 	Get file source string.
+			 * 
+			 * 	@return source string
+			 */
+			src : function(){
+				var self = this;
+			
+				return forEach([
+					self.stack.protocol,
+					!!self.stack.prefix && (self.stack.prefix + '.'),
+					!!self.stack.host	&& (self.stack.host + '/'),
+					!!self.stack.dir 	&& !!self.stack.dir.stack.length && (self.stack.dir.get() + '/')
+				],function(_,item){
+					!!item && (this.result += item);
+				},'');
+			},
+			
+			/**
+			 * 	Get filename.
+			 * 
+			 * 	@return filename
+			 */
+			file : function(){
+				return forEach([
+					this.stack.file,
+					!!this.stack.ext && ('.' + this.stack.ext)
+				],function(_,item){
+					!!item && (this.result += item);
+				},'');
+			},
+			
+			/**
+			 * 	Get URI.
+			 * 
+			 * 	@return URI
+			 */
+			uri : function(){
+				return !!this.stack.uri && !!this.stack.uri.stack.length && ('?' + this.stack.uri.get());
+			},
+			
+			/**
+			 * 	Get full source string.
+			 * 
+			 * 	@return full string
+			 */
+			full : function(){
+				return forEach([
+					this.src(),
+					this.file(),
+					this.uri()
+				],function(_,item){
+					!!item && (this.result += item);
+				},'');
+			},
+			
+			/**
+			 * 	Get file type.
+			 * 
+			 * 	@return file type
+			 */
+			type : function(){
+				return this.stack.fullext;
+			},
+			
+			/**
+			 * 	Morph two Url Objects.
+			 * 
+			 * 	@param Url url Url object you want to morph.
+			 */
+			morph : function(url){
+				url instanceof Url && this.host == url.host && this.stack.dir.morph(url.stack.dir);
+			},
+			
+			/**
+			 * 	Add a timestamp to the current URI
+			 */
+			refresh : function(){
+				this.stack.uri.push('_='+(new Date().getTime()));
 			}
 		}),
 	
 		/**
-		 *	Exec Internal
+		 * 	Special command functions.
 		 *
-		 *	This is handling extra commands for loaded files.
-		 *
+		 * 	@package		requireX/Exec
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		Exec = new Class({
 			static : {
+				/**
+				 * 	Internal unite modifier.
+				 * 
+				 * 	@param Integer i Internal unite pointer
+				 *	@return pointer
+				 */
 				filter : function(i){
 					return '$'+(i+1);
 				}
 			},
+			
+			/**
+			 * 	Constructor
+			 * 
+			 * 	@param String string String you want to get analyzed for commands
+			 * 	@return Exec
+			 */
 			create : function(string){
 				var scan = RegExp.apply(new RegExp,patternExec);
 			
@@ -241,6 +527,14 @@
 					},{})
 				});
 			},
+			
+			/**
+			 * 	Loop through specific command collection.
+			 * 
+			 * 	@param Object collection Collection you want to loop through
+			 *	@param Function callback Callback for each command that got found
+			 * 	@return all found objects
+			 */
 			eachCollection : function(collection,callback){
 				if (collection) 
 				{
@@ -258,6 +552,12 @@
 				
 				return null;
 			},
+			
+			/**
+			 * 	Hook all global variables of a script.
+			 * 
+			 * 	@return variables found
+			 */
 			getModuleVariables : function(){
 				return this.eachCollection(this.collection['#'],function(item,object){
 					var result = {};
@@ -267,6 +567,12 @@
 					return result;
 				});
 			},
+			
+			/**
+			 * 	Automaticly execute all found global functions.
+			 * 
+			 * 	@return results of all executed functions
+			 */
 			doAutoExecution : function(){
 				return this.eachCollection(this.collection['-'],function(item,object){
 					var result = {};
@@ -280,21 +586,51 @@
 	
 	
 		/**
-		 *	Instance Internal
+		 * 	Handle instances.
 		 *
+		 * 	@package		requireX/Instance
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		Instance = new Class({
 			static : {
+				/**
+				 * 	Native get/set.
+				 */
 				native : {
+					/**
+					 * 	Set value.
+					 * 
+					 * 	@param String key Key for value
+					 *	@param Object value Value you want to set
+					 */
 					set : function(key,value){
 						this[key] = value;
 					},
+					
+					/**
+					 * 	Check if key is set.
+					 * 
+					 * 	@param String key Key for value
+					 */
 					is : function(key){
 						return !!this[key];
 					},
+					
+					/**
+					 * 	Get value.
+					 * 
+					 * 	@param String key Key for value
+					 */
 					get : function(key){
 						return this.instance.is(key) && this[key];
 					},
+					
+					/**
+					 * 	Clear value.
+					 * 
+					 * 	@param String key Key for value
+					 */
 					clear : function(key){
 						if (this.instance.is(key))
 						{
@@ -304,6 +640,13 @@
 					}
 				}
 			},
+			
+			/**
+			 * 	Constructor
+			 * 
+			 * 	@param Object props Data you want to handle
+			 *	@return Instance
+			 */
 			create : function(props){
 				var self = this;
 				
@@ -319,23 +662,53 @@
 					}
 				});
 			},
+			
+			/**
+			 * 	Change native set/get to root set/get.
+			 * 
+			 *	@return root set/get
+			 */
 			toRoot : function(){
 				return extend(this,{
-					is : function(key){
-						return !!this.container[key.fullext] && !!this.container[key.fullext].is(key.file);
-					},
+					/**
+					 * 	Set value.
+					 * 
+					 * 	@param Url key Key for value
+					 *	@param Object value Value you want to set
+					 */
 					set : function(key,value){
-						!this.container[key.fullext] && (this.container[key.fullext] = new Instance());
-						this.container[key.fullext].set(key.file,value);
+						!this.container[key.type()] && (this.container[key.type()] = new Instance());
+						this.container[key.type()].set(key.file(),value);
 					},
+					
+					/**
+					 * 	Check if key is set.
+					 * 
+					 * 	@param Url key Key for value
+					 */
+					is : function(key){
+						return !!this.container[key.type()] && !!this.container[key.type()].is(key.file());
+					},
+					
+					/**
+					 * 	Get value.
+					 * 
+					 * 	@param Url key Key for value
+					 */
 					get : function(key){
-						return this.is(key) && this.container[key.fullext].get(key.file);
+						return this.is(key) && this.container[key.type()].get(key.file());
 					},
+					
+					/**
+					 * 	Clear value.
+					 * 
+					 * 	@param Url key Key for value
+					 */
 					clear : function(key){
 						if (this.is(key))
 						{
 							this.set(key,null);
-							delete this.container[key.fullext];
+							delete this.container[key.type()];
 						}
 					}
 				});
@@ -343,21 +716,50 @@
 		}),
 	
 		/**
-		 *	State Internal
+		 * 	Check if state is given and execute callbacks.
+		 *
+		 * 	@package		requireX/State
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		State = new Class({
+			/**
+			 * 	Constructor
+			 * 
+			 * 	@param String type State you want at the end
+			 *	@return State
+			 */
 			create : function(type){
 				extend(this,{
 					type : type,
 					stack : []
 				});
 			},
+			
+			/**
+			 * 	Add callback.
+			 * 
+			 * 	@param Function func Callback function
+			 */
 			add : function(func){
 				this.stack.push(func);
 			},
+			
+			/**
+			 * 	Compare states.
+			 * 
+			 * 	@param State t State you want to compare
+			 */
 			is : function(t){
 				return this.type == null || t === this.type;
 			},
+			
+			/**
+			 * 	Execute callbacks.
+			 * 
+			 * 	@param State t State you want to compare
+			 *	@param Object args Arguments for callbacks
+			 */
 			run : function(t,args){
 				this.is(t) && forEach(function(){
 					return this.result.stack[0];
@@ -368,19 +770,29 @@
 		}),
 	
 		/**
-		 *	Promise Internal
+		 * 	Handle all promises.
+		 *
+		 * 	@package		requireX/Promise
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		Promise = new Class({
 			static : {
-				multi : function(){
-					var dfd 	= new Promise(),
-						args 	= arguments,
-						length 	= args.length,
-						stack 	= [],
-						push 	= function(index,result){
+				/**
+				 * 	Wait for multiple Promises.
+				 * 
+				 * 	@param Promise[] All pending Promises
+				 *	@return Promise
+				 */
+				deferred : function(){
+					var dfd = new Promise(),
+						stack = [],
+						args = arguments,
+						eof = args.length,
+						push = function(index,result){
 							stack[index] = result;
-
-							(stack.length == length && forEach(stack,function(_,item){
+							
+							(stack.length == eof && forEach(stack,function(_,item){
 								if (item == null)
 								{
 									this.result = false;
@@ -398,8 +810,39 @@
 					});
 						
 					return dfd;
+				},
+				
+				/**
+				 * 	Synchronous callback queue.
+				 * 
+				 * 	@param Array pending All Promises which have to handle
+				 *	@param Function callback Callback after Promises are done
+				 *	@return Promise
+				 */
+				queue : function(pending,callback){
+					var pointer = 0,
+						processing = function(){
+							if (!pending[pointer])
+							{
+								return false;
+							}
+	
+							pending[pointer].always(function(){
+								processing(++pointer);
+							});
+							
+							return callback(pointer);
+						};
+						
+					return processing() && Promise.deferred.apply(null,pending);
 				}
 			},
+			
+			/**
+			 * 	Constructor
+			 * 
+			 *	@return Promise
+			 */
 			create : function(){
 				var self = this,
 					states = [
@@ -411,16 +854,37 @@
 				extend(self,{
 					states : states,
 					id : new Date().getTime() * Math.random(),
+					
+					/**
+					 * 	Everything is successful callbacks
+					 * 
+					 * 	@param Function func Callback function
+					 *	@return Promise
+					 */
 					then : function(func){
 						states[0].add(func);
 						
 						return self;
 					},
+					
+					/**
+					 * 	Something failed callbacks
+					 * 
+					 * 	@param Function func Callback function
+					 *	@return Promise
+					 */
 					fail : function(func){
 						states[1].add(func);
 						
 						return self;
 					},
+					
+					/**
+					 * 	Always do callbacks
+					 * 
+					 * 	@param Function func Callback function
+					 *	@return Promise
+					 */
 					always : function(func){
 						states[2].add(func);
 						
@@ -428,11 +892,29 @@
 					}
 				});
 			},
+			
+			/**
+			 * 	Set Promise to done.
+			 * 
+			 * 	@param Array pending All Promises which have to handle
+			 *	@param Function callback Callback after Promises are done
+			 *	@return Promise
+			 */
 			complete : function(state,args){
 				forEach(this.states,function(index,item){
 					item.run(state,args);
 				});
 			},
+
+			/**
+			 * 	Set next Promise.
+			 * 
+			 * 	@param Array files Files to load
+			 *	@param Object settings Settings for the load (optional)
+			 *	@param Function callback Callback after everything is done (optional)
+			 *	@param Function process Callback for every file loaded (optional)
+			 *	@return Promise
+			 */
 			next : function(){
 				var dfd = new Promise(),
 					args = arguments;
@@ -450,18 +932,62 @@
 		}),
 	
 		/**
-		 *	Core Internal
+		 * 	Main class of requireX.
 		 *
-		 *	The core of the whole class here everything get registered.
-		 *
+		 * 	@package		requireX/Core
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		Core = new Class({
 			static : {
+				/**
+				 * 	Argument processing helper.
+				 *
+				 * 	@package		requireX/Core/argsHandler
+				 * 	@author			swe <soerenwehmeier@googlemail.com>
+				 * 	@version		0.8.0.0
+				 */
 				argsHandler : new Class({
 					static : {
+						/**
+						 * 	Argument handler for define function.
+						 * 
+						 * 	@param Object args Argument options
+						 *	@return options object
+						 */
+						define : function(args){
+							return forEach({
+								settings : 'object',
+								requires : 'array',
+								create : 'function'
+							},function(index,item){
+								var first = getFirstOfType(args,item);
+								
+								if (first != null) 
+								{
+									this.result[index] = args[first];
+									args[first] = null;
+									delete args[first];
+								}
+							},{});
+						},
+						
+						/**
+						 * 	Argument handler for waitForFiles function.
+						 * 
+						 * 	@param Object args Argument options
+						 *	@return options object
+						 */
 						waitForFiles : function(args){
 							return getType(args[0]) == 'array' ? args[0] : args;
 						},
+						
+						/**
+						 * 	Argument handler for require function.
+						 * 
+						 * 	@param Object args Argument options
+						 *	@return options object
+						 */
 						require : function(args){
 							return forEach({
 								files : 'array',
@@ -471,11 +997,20 @@
 							},function(index,item){
 								var first = getFirstOfType(args,item);
 								
-								first != null && (this.result[index] = args[first]);
+								if (first != null)
+								{
+									this.result[index] = args[first];
+									args[first] = null;
+									delete args[first];
+								}
 							},{});
 						}
 					}
 				}),
+				
+				/**
+				 * 	Core static as GetType helper.
+				 */
 				typeifier : new Type({
 					object : (function(parents){
 						var length = parents.length;
@@ -491,6 +1026,10 @@
 						};
 					})(['Array','Number','Date','RegExp'])
 				}),
+				
+				/**
+				 * 	Core static as browser analyzing helper.
+				 */
 				browser : (function(){
 					var obj = {},
 						agent = navigator.userAgent,
@@ -509,15 +1048,37 @@
 					
 					return obj;
 				})(),
+				
+				/**
+				 * 	Core static as appendTo helper.
+				 */
 				appendTo : (function(_){
 					return _.length ? _[0] : null;
 				})(doc.getElementsByTagName('head')),
+				
+				/**
+				 * 	Core instances.
+				 */
 				cache : (new Instance()).toRoot(),
 				pending : (new Instance()).toRoot(),
 				defined	: (new Instance()).toRoot(),
+				loading : null,
+				
+				/**
+				 * 	Load file helper.
+				 *
+				 * 	@package		requireX/Core/load
+				 * 	@author			swe <soerenwehmeier@googlemail.com>
+				 * 	@version		0.8.0.0
+				 */
 				load : new Class({
 					static : {
-						//Javascript loader
+						/**
+						 * 	Load Javascript files.
+						 * 
+						 * 	@param Context ctx File context
+						 *	@return Promise
+						 */
 						script : function(ctx){
 							var dfd = new Promise(),
 								script = document.createElement("script"),
@@ -530,7 +1091,7 @@
 									{					
 										script.onerror = script.onload = script.onreadystatechange = null;
 										!!script.parentNode && script.parentNode.removeChild( script );
-										script = null;
+										Core.loading = script = null;
 										dfd.complete(ctx.success = !failure && !(Core.browser.MSIE && /loaded/.test( state )));
 									}
 								},
@@ -545,14 +1106,21 @@
 								onload : onload,
 								onreadystatechange : onload,
 								onerror : onerror,
-								src : ctx.path.full
+								src : ctx.path.full()
 							},ctx.settings,false);
 							
+							Core.loading = ctx;
 							Core.appendTo.appendChild(script);
 							
 							return dfd;
 						},
-						//Cascading Style Sheet loader
+						
+						/**
+						 * 	Load Cascading Style Sheet files.
+						 * 
+						 * 	@param Context ctx File context
+						 *	@return Promise
+						 */
 						stylesheet : function(ctx){
 							var dfd = new Promise(),
 								style = document.createElement('link'),
@@ -567,7 +1135,7 @@
 										style.onload = style.onreadystatechange = null;
 										!failure && (failure = !!(Core.browser.MSIE && /loaded/.test( state )));
 										!!failure && !!style.parentNode && style.parentNode.removeChild( style );
-										style = null;
+										Core.loading = style = null;
 
 										dfd.complete(ctx.success = !failure);
 									}
@@ -589,14 +1157,21 @@
 								onload : onload,
 								onreadystatechange : onload,
 								onerror : onerror,
-								href : ctx.path.full
+								href : ctx.path.full()
 							},ctx.settings,false);
 							
+							Core.loading = ctx;
 							Core.appendTo.appendChild(style);
 							
 							return dfd;
 						},
-						//Image loader
+						
+						/**
+						 * 	Load image files.
+						 * 
+						 * 	@param Context ctx File context
+						 *	@return Promise
+						 */
 						image : function(ctx){
 							var dfd = new Promise(),
 								image = new Image(),
@@ -607,7 +1182,7 @@
 									if (failure || !state || /loaded|complete/i.test( state ) ) 
 									{					
 										image.onload = image.onerror = image.onabort = null;
-										image = null;
+										Core.loading = image = null;
 
 										dfd.complete(ctx.success = !failure && !(Core.browser.MSIE && /loaded/.test( state )));
 									}
@@ -616,31 +1191,41 @@
 									onload(_,true);
 								};
 								
+							Core.loading = ctx;
 							extend(image,{
 								onload : onload,
 								onreadystatechange : onload,
 								onerror : onerror,
 								onabort : onerror,
-								src : ctx.path.full
+								src : ctx.path.full()
 							},ctx.settings,false);
 							
 							return dfd;
 						}
 					},
+					
+					/**
+					 * 	Constructor
+					 * 
+					 * 	@param Context ctx File context
+					 *	@return Promise
+					 */
 					create : function(ctx){
 						var dfd = new Promise();
 						
 						quickDelay(function(){
-							if (!Core.load[ctx.path.fullext])
+							if (!Core.load[ctx.path.type()])
 							{
 								return dfd.complete(ctx.success = false,[ctx]);
 							}
 
-							Core.load[ctx.path.fullext](ctx).then(function(){
+							Core.load[ctx.path.type()](ctx).then(function(){			
 								ctx.variables = ctx.exec.getModuleVariables();
 								ctx.autoexecution = ctx.exec.doAutoExecution();
 							}).always(function(){
-								dfd.complete(null,[ctx]);
+								!!ctx.toLoad ? ctx.toLoad.always(function(){
+									dfd.complete(null,[ctx]);
+								}) : dfd.complete(null,[ctx]);
 							});
 						});
 						
@@ -651,44 +1236,193 @@
 		}),
 	
 		/**
-		 *	Context Internal
+		 * 	Context of loading file.
 		 *
-		 *	This is the executing part of the script. It loads for example every file.
-		 *
+		 * 	@package		requireX/Context
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
 		 */
 		Context = new Class({
-			create : function(options){
-				var dfd = new Promise(),
-					exec = new Exec(options.file),
-					path = new Url(exec.cleared);
+			/**
+			 * 	Constructor
+			 * 
+			 * 	@param String file File you want to load
+			 *	@param Object settings Settings of the file load
+			 *	@return Context
+			 */
+			create : function(file,settings){
+				var self = this,
+					exec = new Exec(file);
 					
-				this.run = function(){
-					var ref = Core.cache.get(path);
-
-					!ref || !ref.success ? new Core.load({
-						exec : exec,
-						path : path,
-						settings : options.settings
-					}).always(function(ctx){
-						Core.pending.clear(path);
-						Core.cache.set(path,ctx);
-						dfd.complete(ctx.success,[ctx]);
-					}) : quickDelay(function(){
-						dfd.complete(true,[ref]);
-					})
-				};
+				extend(self,{
+					dfd : new Promise(),
+					exec : exec,
+					path : new Url(exec.cleared),
+					settings : settings
+				});
 				
-				Core.pending.set(path,dfd);
+				Core.pending.set(self.path,self);
 				
-				return [this,dfd];
+				if (!!settings)
+				{
+					!!settings.refresh && self.path.refresh();
+					!!settings.root && self.path.morph(settings.root);
+				}
+			},
+			
+			/**
+			 * 	Run file load.
+			 */
+			run : function(){
+				var ref = Core.cache.get(this.path);
+				
+				if (!ref || !ref.success)
+				{
+					return new Core.load(this).always(function(ctx){
+						Core.pending.clear(ctx.path);
+						Core.cache.set(ctx.path,ctx);
+						ctx.dfd.complete(ctx.success,[ctx]);
+					});
+				}
+				
+				this.dfd.complete(true,[ref]);
+			}
+		}),
+		
+		/**
+		 * 	Loading files.
+		 *
+		 * 	@package		requireX/Loader
+		 * 	@author			swe <soerenwehmeier@googlemail.com>
+		 * 	@version		0.8.0.0
+		 */
+		Loader = new Class({
+			/**
+			 * 	Constructor
+			 * 
+			 * 	@param Array file Files you want to load
+			 *	@param Object settings Settings of the load
+			 *	@param Function process Processing callback
+			 *	@return Loader
+			 */
+			create : function(files,settings,process){
+				var pending = [],
+					self = this;
+				
+				extend(self,{
+					stack : forEach(files,function(_,item){
+						var ctx = new Context(item,settings);
+					
+						this.result.push(ctx);
+						pending.push(ctx.dfd);
+					},[]),
+					dfd : new Promise()
+				});
+				
+				Promise.queue(pending,function(pointer){
+					!!process && process.call(self.stack[pointer],pointer,self.stack[pointer].path);
+					self.stack[pointer].run();
+					
+					return true;
+				}).always(function(){
+					self.dfd.complete.apply(self.dfd,forEach(arguments,function(_,item){
+						!item.success && (this.result[0] = false);
+						this.result[1].push(Core.defined.get(item.path) || item);
+					},[true,[]]))
+				});
 			}
 		});
 		
 	/**
-	 *	WaitFor Internal
-	 *
-	 *	Wait for files.
-	 *
+	 * 	Load files.
+	 * 
+	 * 	@param Array files Files to load
+	 *	@param Object settings Settings for the load (optional)
+	 *	@param Function callback Callback after everything is done (optional)
+	 *	@param Function process Callback for every file loaded (optional)
+	 *	@return Promise
+	 */
+	function require(){
+		var options = Core.argsHandler.require(arguments),
+			loader = new Loader(options.files,options.settings,options.process);
+			
+		return loader.dfd.always(function(){
+			!!Core.master && Core.master.id == loader.dfd.id && (Core.master = null);
+			!!options.callback && options.callback.apply(null,arguments);
+		});
+	}
+	
+	/**
+	 * 	Handle external require calls.
+	 * 
+	 * 	@param Array files Files to load
+	 *	@param Object settings Settings for the load (optional)
+	 *	@param Function callback Callback after everything is done (optional)
+	 *	@param Function process Callback for every file loaded (optional)
+	 *	@return Promise
+	 */
+	function requirePre(){
+		return Core.master = (Core.master ? Core.master.next.apply(Core.master,arguments) : require.apply(null,arguments));
+	}
+		
+	/**
+	 * 	Define file context.
+	 * 
+	 *	@param Function create Create file context
+	 * 	@param Array requires Files which are required (optional)
+	 *	@param Object settings Settings for the load (optional)
+	 */
+	function define(){
+		if (Core.loading)
+		{
+			var options = Core.argsHandler.define(arguments);
+
+			if (options.create)
+			{			
+				if (options.requires)
+				{
+					var loading = Core.loading,
+						loader = new Loader(options.requires,extend({
+							root : loading.path
+						},options.settings));
+					
+					return loading.toLoad = loader.dfd.then(function(){
+						Core.defined.set(loading.path,options.create.apply(loading,arguments));
+					});
+				}
+				
+				Core.defined.set(Core.loading.path,options.create.call(Core.loading));
+			}
+		}
+	}
+	
+	/**
+	 * 	Check if file is pending.
+	 * 
+	 *	@param String file File to check
+	 * 	@return is file pending
+	 */
+	function isPending(file){
+		return Core.pending.is(new Url(file));
+	}
+	
+	/**
+	 * 	Check if file is loaded.
+	 * 
+	 *	@param String file File to check
+	 * 	@return is file loaded
+	 */
+	function isLoaded(file){
+		var path = new Url(file);
+	
+		return Core.cache.is(path) && Core.cache.get(path).success;
+	}
+		
+	/**
+	 * 	Check if file is loaded.
+	 * 
+	 *	@param Array argument Files you want to wait for
+	 * 	@return Promise
 	 */
 	function waitForFiles(){
 		var dfd = new Promise(),
@@ -699,7 +1433,7 @@
 				
 				if (Core.pending.is(path))
 				{
-					pending.push(Core.pending.get(path));
+					pending.push(Core.pending.get(path).dfd);
 				}
 				else if (!Core.cache.is(path))
 				{
@@ -712,7 +1446,7 @@
 							}
 							else if (Core.pending.is(path))
 							{
-								Core.pending.get(path).then(function(){
+								Core.pending.get(path).dfd.then(function(){
 									retry.complete();
 								});
 								clIntv(interval);
@@ -730,97 +1464,22 @@
 				this.result.push(path);
 			},[]),
 			getArgs = function(){
-				var sleeping = [],
-					args = forEach(pathes,function(index,item){
-						Core.pending.is(item) ? sleeping.push(item.full) : (this.result[index] = Core.defined.get(item) || Core.cache.get(item));
-					},[]);
-				
-				sleeping.length ? (waitForFiles.apply(null,sleeping)).always(function(){
-					dfd.complete(forEach(pathes,function(index,item){
-						if (!Core.cache.is(item) || !Core.cache.get(item).success)
-						{
-							this.result = false;
-							this.skip = true;
-						}
-					},true),forEach(pathes,function(index,item){
-						args[index] == null && (args[index] = Core.cache.get(item));
-					},args));
-				}) : dfd.complete(forEach(pathes,function(index,item){
+				dfd.complete.apply(dfd,forEach(pathes,function(index,item){
 					if (!Core.cache.is(item) || !Core.cache.get(item).success)
 					{
-						this.result = false;
-						this.skip = true;
+						this.result[0] = false;
 					}
-				},true),args);
+					
+					this.result[1][index] = Core.defined.get(item) || Core.cache.get(item);
+				},[true,[]]))
 			};
-			
+		
 		pending.length 
-			? Promise.multi.apply(null,pending).always(getArgs) 
+			? Promise.deferred.apply(null,pending).always(getArgs) 
 			: delay(getArgs,0);
 			
 		return dfd;
 	}
 	
-	/**
-	 *	Require Internal
-	 *
-	 *	Load files.
-	 *
-	 */
-	function require(){
-		var dfd = new Promise(),
-			options = Core.argsHandler.require(arguments),
-			pending = [],
-			stack = forEach(options.files,function(_,item){
-				var context = new Context({
-					settings : options.settings || {},
-					file : item
-				});
-				
-				this.result.push(context.shift());
-				pending.push(context.shift());
-			},[]),
-			master = Promise.multi.apply(null,pending).always(function(){
-				dfd.complete(forEach(arguments,function(_,item){
-					if (!item.success)
-					{
-						this.result = false;
-						this.skip = true;
-					}
-				},true),forEach(arguments,function(_,item){
-					this.result.push(Core.defined.get(item.path) || item);
-				},[]));
-			}),
-			processing = function(pointer){
-				if (!pending[pointer] || !stack[pointer])
-				{
-					return false;
-				}
-				
-				pending[pointer].always(function(){
-					processing(++pointer);
-				});
-				stack[pointer].run();
-				
-				return true;
-			};
-			
-		return processing(0) && dfd.always(function(){
-			!!Core.master && Core.master.id == dfd.id && (Core.master = null);
-			!!options.callback && options.callback.apply(null,arguments);
-		});
-	}
-	
-	
-	extend(global,unite(funcs,[function(){
-		return Core.master = (Core.master ? Core.master.next.apply(Core.master,arguments) : require.apply(null,arguments));
-	},function(){
-		//TODO
-	},function(file){
-		return Core.pending.is(new Url(file));
-	},function(file){
-		var path = new Url(file);
-	
-		return Core.cache.is(path) && Core.cache.get(path).success;
-	},waitForFiles]));
+	extend(global,unite(funcs,[requirePre,define,isPending,isLoaded,waitForFiles]));
 })(this.window || this);

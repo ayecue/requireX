@@ -1,0 +1,81 @@
+<html>
+	<head>
+		<script type="text/javascript" src="../requireX.min.js"></script>
+		<script type="text/javascript">			
+			require([
+				'!#$;http://nothing.todo.here/ajax/libs/jquery/1.9.1/jquery.min.js',
+				'!-$;!#$.fn;http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js',
+				'http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js',
+				'https://developers.google.com/_static/css/screen.css',
+				'style.css',
+				'http://www.w3schools.com/images/w3schoolslogoNEW310113.gif'
+			]).always(function(a,b,c,d,e,f){
+				$("div")
+					.append('<p class="new">>> call require()</p>')
+					.append('<p>Loaded: '+a.success+' ('+a.path.file()+') from '+a.path.src()+'</p>')
+					.append('<p>Loaded: '+b.success+' ('+b.path.file()+') from '+b.path.src()+'</p>')
+					.append('<p>Loaded: '+c.success+' ('+c.path.file()+') from '+c.path.src()+'</p>')
+					.append('<p>Loaded: '+d.success+' ('+d.path.file()+') from '+d.path.src()+'</p>')
+					.append('<p>Loaded: '+e.success+' ('+e.path.file()+') from '+e.path.src()+'</p>')
+					.append('<p>Loaded: '+f.success+' ('+f.path.file()+') from '+f.path.src()+'</p>');
+			}).next([
+				'http://ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js'
+			]).then(function(a){
+				$("div")
+					.append('<p class="new">>> call require()</p>')
+					.append('<p>Loaded: '+a.success+' ('+a.path.file()+') from '+a.path.src()+'</p>');
+			});
+			
+			require([
+				'http://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js'
+			]).then(function(a){
+				$("div")
+					.append('<p class="new">>> call require()</p>')
+					.append('<p>Loaded: '+a.success+' ('+a.path.file()+') from '+a.path.src()+'</p>');
+				
+				require([
+					'http://ajax.googleapis.com/ajax/libs/webfont/1.4.2/webfont.js'
+				]).then(function(a){
+					$("div")
+						.append('<p class="new">>> call require()</p>')
+						.append('<p>Loaded: '+a.success+' ('+a.path.file()+') from '+a.path.src()+'</p>');
+				});
+			});
+			
+			waitForFiles('jquery.min.js','webfont.js','style.css').always(function(a,b,c){
+				$("div")
+					.append('<p class="new">>> call waitForFiles()</p>')
+					.append('<p>Loaded: '+a.success+' ('+a.path.file()+') from '+a.path.src()+'</p>')
+					.append('<p>Loaded: '+b.success+' ('+b.path.file()+') from '+b.path.src()+'</p>')
+					.append('<p>Loaded: '+c.success+' ('+c.path.file()+') from '+c.path.src()+'</p>');
+			});
+		</script>
+		<style type="text/css">
+			body {
+				position: relative;
+			}
+			div {
+				Font-Family: Arial!important;
+				color: #FFF!important;
+				line-height: 14px!important;
+				padding: 10px!important;
+				background: #000!important;
+				border: 2px solid #CCC!important;
+				position: fixed;
+				height: 100%;
+				width: 100%;
+			}
+			div p
+			{
+				margin: 0!important;
+			}
+			div p.new
+			{
+				margin: 10px 0 0!important;
+			}
+		</style>
+	</head>
+	<html>
+		<div></div>
+	</html>
+</html>
