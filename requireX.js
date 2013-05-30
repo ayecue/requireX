@@ -3,7 +3,7 @@
  *	--
  *
  *	@package			requireX
- *	@version 			0.8.0.0
+ *	@version 			0.8.1.0
  *	@author 			swe <soerenwehmeier@googlemail.com>
  *
  */
@@ -78,7 +78,7 @@
 			}
 			else if (t = obj.length)
 			{
-				for (var k = 0; k < t && !d.skip; callback.call(d,k,obj[k++]));        
+				for (var k = 0; k < t && !d.skip; callback.call(d,k,obj[k++]));				
 			}
 			else
 			{
@@ -188,7 +188,7 @@
 		 *
 		 * 	@package		requireX/extTypes
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		extTypes = (new (function(){
 			var self = this;
@@ -210,7 +210,7 @@
 		 *
 		 * 	@package		requireX/Class
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Class = function(){
 			return forEach(arguments,function(_,module){
@@ -248,7 +248,7 @@
 		 *
 		 * 	@package		requireX/Type
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Type = new Class({
 			/**
@@ -280,7 +280,7 @@
 		 *
 		 * 	@package		requireX/FlexString
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		FlexString = new Class({
 			/**
@@ -357,7 +357,7 @@
 		 *
 		 * 	@package		requireX/Url
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Url = new Class({
 			static : {
@@ -492,7 +492,7 @@
 		 *
 		 * 	@package		requireX/Exec
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Exec = new Class({
 			static : {
@@ -590,7 +590,7 @@
 		 *
 		 * 	@package		requireX/Instance
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Instance = new Class({
 			static : {
@@ -720,7 +720,7 @@
 		 *
 		 * 	@package		requireX/State
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		State = new Class({
 			/**
@@ -764,7 +764,7 @@
 				this.is(t) && forEach(function(){
 					return this.result.stack[0];
 				},function(){
-					this.result.stack.shift().apply(null,args);
+					this.result.stack.shift().apply(null,args || []);
 				},this);
 			}
 		}),
@@ -774,7 +774,7 @@
 		 *
 		 * 	@package		requireX/Promise
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Promise = new Class({
 			static : {
@@ -791,7 +791,7 @@
 						eof = args.length,
 						push = function(index,result){
 							stack[index] = result;
-							
+
 							(stack.length == eof && forEach(stack,function(_,item){
 								if (item == null)
 								{
@@ -853,7 +853,7 @@
 				
 				extend(self,{
 					states : states,
-					id : new Date().getTime() * Math.random(),
+					id : Math.floor(new Date().getTime() * Math.random()),
 					
 					/**
 					 * 	Everything is successful callbacks
@@ -936,7 +936,7 @@
 		 *
 		 * 	@package		requireX/Core
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Core = new Class({
 			static : {
@@ -945,7 +945,7 @@
 				 *
 				 * 	@package		requireX/Core/argsHandler
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.0.0
+				 * 	@version		0.8.1.0
 				 */
 				argsHandler : new Class({
 					static : {
@@ -1069,7 +1069,7 @@
 				 *
 				 * 	@package		requireX/Core/load
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.0.0
+				 * 	@version		0.8.1.0
 				 */
 				load : new Class({
 					static : {
@@ -1098,19 +1098,22 @@
 								onerror = function(_){
 									onload(_,true);
 								};
-							
-							extend(script,{
-								type : 'text/javascript',
-								charset : 'utf-8',
-								async : true,
-								onload : onload,
-								onreadystatechange : onload,
-								onerror : onerror,
-								src : ctx.path.full()
-							},ctx.settings,false);
-							
+								
 							Core.loading = ctx;
-							Core.appendTo.appendChild(script);
+							
+							quickDelay(function(){
+								extend(script,{
+									type : 'text/javascript',
+									charset : 'utf-8',
+									async : true,
+									onload : onload,
+									onreadystatechange : onload,
+									onerror : onerror,
+									src : ctx.path.full()
+								},ctx.settings,false);
+								
+								Core.appendTo.appendChild(script);
+							});
 							
 							return dfd;
 						},
@@ -1124,16 +1127,19 @@
 						stylesheet : function(ctx){
 							var dfd = new Promise(),
 								style = document.createElement('link'),
+								loading = false,
 								onload = function( _, failure){
 									if (!style) return;
 
 									var state = style.readyState;
+									
+									Core.browser.MSIE && /loading/i.test( state ) && (loading = true);
 
 									if (failure || !state || /loaded|complete/i.test( state ) ) 
 									{
 										clIntv(interval);
 										style.onload = style.onreadystatechange = null;
-										!failure && (failure = !!(Core.browser.MSIE && /loaded/.test( state )));
+										!failure && (failure = !!(Core.browser.MSIE && !loading));
 										!!failure && !!style.parentNode && style.parentNode.removeChild( style );
 										Core.loading = style = null;
 
@@ -1150,18 +1156,21 @@
 									try{!!style.sheet.cssRules && onload();}catch(e){trys++;}
 								},10);
 							
-							extend(style,{
-								type : 'text/css',
-								rel : 'stylesheet',
-								charset : 'utf-8',
-								onload : onload,
-								onreadystatechange : onload,
-								onerror : onerror,
-								href : ctx.path.full()
-							},ctx.settings,false);
-							
 							Core.loading = ctx;
-							Core.appendTo.appendChild(style);
+							
+							quickDelay(function(){
+								extend(style,{
+									type : 'text/css',
+									rel : 'stylesheet',
+									charset : 'utf-8',
+									onload : onload,
+									onreadystatechange : onload,
+									onerror : onerror,
+									href : ctx.path.full()
+								},ctx.settings,false);
+								
+								Core.appendTo.appendChild(style);
+							});
 							
 							return dfd;
 						},
@@ -1177,7 +1186,7 @@
 								image = new Image(),
 								onload = function( _, failure){
 									if (!image) return;
-								
+
 									var state = image.readyState;
 									if (failure || !state || /loaded|complete/i.test( state ) ) 
 									{					
@@ -1192,13 +1201,16 @@
 								};
 								
 							Core.loading = ctx;
-							extend(image,{
-								onload : onload,
-								onreadystatechange : onload,
-								onerror : onerror,
-								onabort : onerror,
-								src : ctx.path.full()
-							},ctx.settings,false);
+							
+							quickDelay(function(){
+								extend(image,{
+									onload : onload,
+									onreadystatechange : onload,
+									onerror : onerror,
+									onabort : onerror,
+									src : ctx.path.full()
+								},ctx.settings,false);
+							});
 							
 							return dfd;
 						}
@@ -1219,7 +1231,7 @@
 								return dfd.complete(ctx.success = false,[ctx]);
 							}
 
-							Core.load[ctx.path.type()](ctx).then(function(){			
+							Core.load[ctx.path.type()](ctx).then(function(){
 								ctx.variables = ctx.exec.getModuleVariables();
 								ctx.autoexecution = ctx.exec.doAutoExecution();
 							}).always(function(){
@@ -1240,7 +1252,7 @@
 		 *
 		 * 	@package		requireX/Context
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Context = new Class({
 			/**
@@ -1260,7 +1272,7 @@
 					path : new Url(exec.cleared),
 					settings : settings
 				});
-				
+
 				Core.pending.set(self.path,self);
 				
 				if (!!settings)
@@ -1294,7 +1306,7 @@
 		 *
 		 * 	@package		requireX/Loader
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.0.0
+		 * 	@version		0.8.1.0
 		 */
 		Loader = new Class({
 			/**
@@ -1311,6 +1323,11 @@
 				
 				extend(self,{
 					stack : forEach(files,function(_,item){
+						if (!item)
+						{
+							return;
+						}
+					
 						var ctx = new Context(item,settings);
 					
 						this.result.push(ctx);
