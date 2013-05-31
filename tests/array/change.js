@@ -1,5 +1,5 @@
 define(function(){
-	return {		
+	return {
 		push : function(v){
 			this.data.push(v);
 		},

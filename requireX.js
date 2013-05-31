@@ -3,7 +3,7 @@
  *	--
  *
  *	@package			requireX
- *	@version 			0.8.1.0
+ *	@version 			0.8.2.0
  *	@author 			swe <soerenwehmeier@googlemail.com>
  *
  */
@@ -19,8 +19,9 @@
 		 *	General Globals
 		 */
 		funcs 	= ['require','define','isLoaded','isPending','waitForFiles'],
+		helper	= ['forEach','toArray','unite','extend','getFirstOfType','getType','Class','author','version'],
 		author 	= 'swe',
-		version	= '1.0.0.0',
+		version	= '0.8.2.0',
 		
 		/**
 		 *	Global Shortcuts
@@ -46,6 +47,7 @@
 		patternDomain	= /^([^\/?]+)\/?([^?]*)\??(.*)/i,
 		patternDirname	= /^([^?]*)\??(.*)/i,
 		patternFile		= /(?:\/|^)(.*?)\/?([^\/]+?)(?:\.([^\.]*))?$/,
+		patternCDir		= /^.*\/?\.{1,2}\//i,
 		patternExec 	= ['!([#\\-])([^;]+?);','g'],
 		
 		/**
@@ -68,11 +70,11 @@
 			}
 		
 			var t, d = {result:pre,skip:false};
-		
+
 			if (typeof obj == 'function')
 			{
 				while ((t = obj.call(d)) && !d.skip)
-				{
+				{			
 					callback.call(d,t);
 				}
 			}
@@ -120,7 +122,7 @@
 		},
 		
 		/**
-		 * 	Unite to array to an object.
+		 * 	Unite two arrays to an object.
 		 * 
 		 * 	@param Array keys Later object keys
 		 *	@param Array values Later object values
@@ -188,7 +190,7 @@
 		 *
 		 * 	@package		requireX/extTypes
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		extTypes = (new (function(){
 			var self = this;
@@ -210,7 +212,7 @@
 		 *
 		 * 	@package		requireX/Class
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Class = function(){
 			return forEach(arguments,function(_,module){
@@ -248,7 +250,7 @@
 		 *
 		 * 	@package		requireX/Type
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Type = new Class({
 			/**
@@ -280,7 +282,7 @@
 		 *
 		 * 	@package		requireX/FlexString
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		FlexString = new Class({
 			/**
@@ -325,12 +327,30 @@
 			},
 			
 			/**
+			 * 	Remove first part of FlexString and return it.
+			 * 
+			 * 	@return first part
+			 */
+			shift : function(){
+				return this.stack.shift();
+			},
+			
+			/**
 			 * 	Add a string on the end of FlexString.
 			 * 
 			 * 	@param String string String you want to add
 			 */
 			push : function(string){
 				this.stack.push(!!this.next ? new FlexString(string,this.next) : string);
+			},
+			
+			/**
+			 * 	Remove last part of FlexString and return it.
+			 * 
+			 * 	@return last part
+			 */
+			pop : function(){
+				return this.stack.pop();
 			},
 			
 			/**
@@ -357,7 +377,7 @@
 		 *
 		 * 	@package		requireX/Url
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Url = new Class({
 			static : {
@@ -381,7 +401,7 @@
 						prefix : parts.shift()
 					});
 				
-				parts = parts.shift().match(!!stack.http || !!stack.prefix ? patternDomain : patternDirname).slice(1);
+				parts = parts.shift().match(!!stack.protocol || !!stack.prefix ? patternDomain : patternDirname).slice(1);
 
 				extend(stack,{
 					uri : new FlexString(parts.pop(),['&','=']),
@@ -421,6 +441,23 @@
 				],function(_,item){
 					!!item && (this.result += item);
 				},'');
+			},
+			
+			/**
+			 * 	Get directory.
+			 * 
+			 * 	@return directory
+			 */
+			directory : function(){
+				var self = this;
+			
+				return forEach([
+					!!self.stack.dir 	&& !!self.stack.dir.stack.length && (self.stack.dir.get() + '/'),
+					self.stack.file,
+					!!self.stack.ext && ('.' + self.stack.ext)
+				],function(_,item){
+					!!item && (this.result += item);
+				},'').replace(patternCDir,'');
 			},
 			
 			/**
@@ -476,7 +513,7 @@
 			 * 	@param Url url Url object you want to morph.
 			 */
 			morph : function(url){
-				url instanceof Url && this.host == url.host && this.stack.dir.morph(url.stack.dir);
+				url instanceof Url && this.stack.host == url.stack.host && this.stack.dir.morph(url.stack.dir);
 			},
 			
 			/**
@@ -492,7 +529,7 @@
 		 *
 		 * 	@package		requireX/Exec
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Exec = new Class({
 			static : {
@@ -517,7 +554,7 @@
 				var scan = RegExp.apply(new RegExp,patternExec);
 			
 				extend(this,{
-					cleared : string.replace(scan,''),
+					cleared : string.replace(RegExp.apply(new RegExp,patternExec),''),
 					collection : forEach(function(){
 						return scan.exec(string);
 					},function(){
@@ -535,18 +572,30 @@
 			 *	@param Function callback Callback for each command that got found
 			 * 	@return all found objects
 			 */
-			eachCollection : function(collection,callback){
+			eachCollection : function(collection,callback){			
 				if (collection) 
 				{
 					return forEach(collection,function(index,item){
 						var all = item.split('.'),
-							obj = global[all.shift()];
+							next = all.shift(),
+							obj = global[next];
 							
-						!!obj && extend(this.result,forEach(function(){
-							return all.shift();
-						},function(next){
-							!(this.result = this.result[next]) && (this.skip = true);
-						},obj));
+						if (!!obj)
+						{
+							if (!!all.length)
+							{
+								extend(this.result,forEach(function(){
+									return all.shift();
+								},function(next){
+									!(this.result = this.result[next]) && (this.skip = true);
+								},obj));
+							}
+							else
+							{
+								this.result[next] = obj;
+								this.skip = true;
+							}
+						}
 					},{});
 				}
 				
@@ -590,7 +639,7 @@
 		 *
 		 * 	@package		requireX/Instance
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Instance = new Class({
 			static : {
@@ -678,7 +727,7 @@
 					 */
 					set : function(key,value){
 						!this.container[key.type()] && (this.container[key.type()] = new Instance());
-						this.container[key.type()].set(key.file(),value);
+						this.container[key.type()].set(key.directory(),value);
 					},
 					
 					/**
@@ -687,7 +736,7 @@
 					 * 	@param Url key Key for value
 					 */
 					is : function(key){
-						return !!this.container[key.type()] && !!this.container[key.type()].is(key.file());
+						return !!this.container[key.type()] && !!this.container[key.type()].is(key.directory());
 					},
 					
 					/**
@@ -696,7 +745,7 @@
 					 * 	@param Url key Key for value
 					 */
 					get : function(key){
-						return this.is(key) && this.container[key.type()].get(key.file());
+						return this.is(key) && this.container[key.type()].get(key.directory());
 					},
 					
 					/**
@@ -720,7 +769,7 @@
 		 *
 		 * 	@package		requireX/State
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		State = new Class({
 			/**
@@ -774,7 +823,7 @@
 		 *
 		 * 	@package		requireX/Promise
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Promise = new Class({
 			static : {
@@ -936,7 +985,7 @@
 		 *
 		 * 	@package		requireX/Core
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Core = new Class({
 			static : {
@@ -945,7 +994,7 @@
 				 *
 				 * 	@package		requireX/Core/argsHandler
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.1.0
+				 * 	@version		0.8.2.0
 				 */
 				argsHandler : new Class({
 					static : {
@@ -1069,7 +1118,7 @@
 				 *
 				 * 	@package		requireX/Core/load
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.1.0
+				 * 	@version		0.8.2.0
 				 */
 				load : new Class({
 					static : {
@@ -1119,7 +1168,7 @@
 						},
 						
 						/**
-						 * 	Load Cascading Style Sheet files.
+						 * 	Load Cascading Style Sheet files. (Internet Explorer got an issue since it wont fire error event.)
 						 * 
 						 * 	@param Context ctx File context
 						 *	@return Promise
@@ -1127,19 +1176,15 @@
 						stylesheet : function(ctx){
 							var dfd = new Promise(),
 								style = document.createElement('link'),
-								loading = false,
 								onload = function( _, failure){
 									if (!style) return;
 
 									var state = style.readyState;
 									
-									Core.browser.MSIE && /loading/i.test( state ) && (loading = true);
-
 									if (failure || !state || /loaded|complete/i.test( state ) ) 
 									{
 										clIntv(interval);
 										style.onload = style.onreadystatechange = null;
-										!failure && (failure = !!(Core.browser.MSIE && !loading));
 										!!failure && !!style.parentNode && style.parentNode.removeChild( style );
 										Core.loading = style = null;
 
@@ -1236,6 +1281,9 @@
 								ctx.autoexecution = ctx.exec.doAutoExecution();
 							}).always(function(){
 								!!ctx.toLoad ? ctx.toLoad.always(function(){
+									ctx.toLoad = null;
+									delete ctx.toLoad;
+									
 									dfd.complete(null,[ctx]);
 								}) : dfd.complete(null,[ctx]);
 							});
@@ -1252,7 +1300,7 @@
 		 *
 		 * 	@package		requireX/Context
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Context = new Class({
 			/**
@@ -1286,18 +1334,21 @@
 			 * 	Run file load.
 			 */
 			run : function(){
-				var ref = Core.cache.get(this.path);
+				var self = this,
+					ref = Core.cache.get(self.path);
 				
 				if (!ref || !ref.success)
 				{
-					return new Core.load(this).always(function(ctx){
+					return new Core.load(self).always(function(ctx){
 						Core.pending.clear(ctx.path);
 						Core.cache.set(ctx.path,ctx);
 						ctx.dfd.complete(ctx.success,[ctx]);
 					});
 				}
 				
-				this.dfd.complete(true,[ref]);
+				quickDelay(function(){
+					self.dfd.complete(true,[ref]);
+				});
 			}
 		}),
 		
@@ -1306,7 +1357,7 @@
 		 *
 		 * 	@package		requireX/Loader
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.1.0
+		 * 	@version		0.8.2.0
 		 */
 		Loader = new Class({
 			/**
@@ -1499,4 +1550,5 @@
 	}
 	
 	extend(global,unite(funcs,[requirePre,define,isPending,isLoaded,waitForFiles]));
+	extend(global[funcs[0]],unite(helper,[forEach,toArray,unite,extend,getFirstOfType,getType,Class,author,version]));
 })(this.window || this);

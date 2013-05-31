@@ -1,0 +1,105 @@
+.window 
+{
+	background: #EEE;
+	border: 1px solid #333;
+	font-family: Arial;
+	position: absolute;
+	z-index: 1;
+	-moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+.window.window-last-active
+{
+	z-index: 2;
+}
+.window.window-drag-active
+{
+	z-index: 3;
+}
+.window.window-drag-active:hover,
+.window.window-drag-active:active
+{
+	cursor: move;
+	user-select: none;
+}
+.window .header
+{
+	position: relative;
+}
+.window .header h1
+{
+	text-transform: capitalize;
+	padding: 5px 0;
+	margin: 0 10px;
+	border-bottom: 1px solid #333;
+}
+.window .header a
+{
+	position: absolute;
+	height: 20px;
+	width: 20px;
+	display: block;
+	right: 10px;
+	top: 10px;
+	bottom: 10px;
+	color: #111;
+	text-decoration: none;
+	-webkit-transition: color .5s ease-out;
+	-moz-transition: color .5s ease-out;
+	-o-transition: color .5s ease-out;
+	transition: color .5s ease-out;
+}
+.window .header a:hover
+{
+	color: #666;
+}
+.window .header a:after
+{
+	content: "\ \2717";
+}
+.window .content
+{
+	margin: 5px 10px;
+}
+.window .footer
+{
+	padding: 5px 0;
+	margin: 0 10px;
+	border-top: 1px solid #333;
+	overflow: hidden;
+}
+.window .button, .window .button:visited,
+.addWindow, .addWindow:visited
+{
+	background: #222 repeat-x;
+    display: inline-block;
+    padding: 5px 10px 6px;
+    color: #fff;
+    text-decoration: none;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    text-shadow: 0 -1px 1px rgba(0,0,0,0.25);
+    border-bottom: 1px solid rgba(0,0,0,0.25);
+    position: relative;
+    cursor: pointer;
+	font-size: 13px;
+	font-weight: bold;
+	line-height: 1;
+	text-shadow: 0 -1px 1px;
+	background-color: #91bd09;
+	float: right;
+	font-family: Arial;
+}
+.addWindow, .addWindow:visited
+{
+	float: none;
+}
+.window .button:hover,
+.addWindow:hover
+{ 
+	background-color: #749a02; 
+}

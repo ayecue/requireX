@@ -1,16 +1,18 @@
 define({
 	refresh : true
 },[
-	'../general/extend.js',
+	'../general/packager.js',
+	'../general/toArray.js',
 	'filter.js',
 	'indexOf.js',
 	'change.js',
-],function(extend,filter,indexOf,change){
+	'info.js'
+],function(packager,toArray){
+	var packages = toArray(arguments).slice(2);
+
 	return function(){
-		extend(this,{
-			data : [],
-			filter : filter,
-			indexOf : indexOf
-		},change);
+		this.data = [];
+	
+		packager(this,packages);
 	};
 });

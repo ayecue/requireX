@@ -1,5 +1,7 @@
 <html>
 	<head>
+		<title>Generic Test</title>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript" src="../requireX.min.js"></script>
 		<script type="text/javascript">			
 			require([
@@ -42,7 +44,11 @@
 				});
 			});
 			
-			waitForFiles('jquery.min.js','webfont.js','style.css').always(function(a,b,c){
+			waitForFiles(
+				'ajax/libs/jquery/1.9.1/jquery.min.js',
+				'ajax/libs/webfont/1.4.2/webfont.js',
+				'style.css'
+			).always(function(a,b,c){
 				$("div")
 					.append('<p class="new">>> call waitForFiles()</p>')
 					.append('<p>Loaded: '+a.success+' ('+a.path.file()+') from '+a.path.src()+'</p>')
