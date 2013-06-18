@@ -3,7 +3,7 @@
  *	--
  *
  *	@package			requireX
- *	@version 			0.8.2.1
+ *	@version 			0.8.2.2
  *	@author 			swe <soerenwehmeier@googlemail.com>
  *
  */
@@ -21,7 +21,7 @@
 		funcs 	= ['require','define','isLoaded','isPending','waitForFiles'],
 		helper	= ['forEach','toArray','unite','extend','getFirstOfType','getType','Class','author','version'],
 		author 	= 'swe',
-		version	= '0.8.2.1',
+		version	= '0.8.2.2',
 		
 		/**
 		 *	Global Shortcuts
@@ -86,7 +86,7 @@
 			{
 				for (var k in obj)
 				{
-					callback.call(d,k, obj[k]);
+					typeof obj[k] != 'unknown' && callback.call(d,k, obj[k]);
 				
 					if (d.skip)
 					{
@@ -190,7 +190,7 @@
 		 *
 		 * 	@package		requireX/extTypes
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		extTypes = (new (function(){
 			var self = this;
@@ -212,7 +212,7 @@
 		 *
 		 * 	@package		requireX/Class
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Class = function(){
 			return forEach(arguments,function(_,module){
@@ -250,7 +250,7 @@
 		 *
 		 * 	@package		requireX/Type
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Type = new Class({
 			/**
@@ -282,7 +282,7 @@
 		 *
 		 * 	@package		requireX/FlexString
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		FlexString = new Class({
 			/**
@@ -377,7 +377,7 @@
 		 *
 		 * 	@package		requireX/Url
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Url = new Class({
 			static : {
@@ -529,7 +529,7 @@
 		 *
 		 * 	@package		requireX/Exec
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Exec = new Class({
 			static : {
@@ -639,7 +639,7 @@
 		 *
 		 * 	@package		requireX/Instance
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Instance = new Class({
 			static : {
@@ -769,7 +769,7 @@
 		 *
 		 * 	@package		requireX/State
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		State = new Class({
 			/**
@@ -823,7 +823,7 @@
 		 *
 		 * 	@package		requireX/Promise
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Promise = new Class({
 			static : {
@@ -985,7 +985,7 @@
 		 *
 		 * 	@package		requireX/Core
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Core = new Class({
 			static : {
@@ -994,7 +994,7 @@
 				 *
 				 * 	@package		requireX/Core/argsHandler
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.1
+				 * 	@version		0.8.2.2
 				 */
 				argsHandler : new Class({
 					static : {
@@ -1118,7 +1118,7 @@
 				 *
 				 * 	@package		requireX/Core/load
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.1
+				 * 	@version		0.8.2.2
 				 */
 				load : new Class({
 					static : {
@@ -1300,7 +1300,7 @@
 		 *
 		 * 	@package		requireX/Context
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Context = new Class({
 			/**
@@ -1357,7 +1357,7 @@
 		 *
 		 * 	@package		requireX/Loader
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.1
+		 * 	@version		0.8.2.2
 		 */
 		Loader = new Class({
 			/**
