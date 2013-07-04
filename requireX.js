@@ -3,7 +3,7 @@
  *	--
  *
  *	@package			requireX
- *	@version 			0.8.2.2
+ *	@version 			0.8.2.3
  *	@author 			swe <soerenwehmeier@googlemail.com>
  *
  */
@@ -21,7 +21,7 @@
 		funcs 	= ['require','define','isLoaded','isPending','waitForFiles'],
 		helper	= ['forEach','toArray','unite','extend','getFirstOfType','getType','Class','author','version'],
 		author 	= 'swe',
-		version	= '0.8.2.2',
+		version	= '0.8.2.3',
 		
 		/**
 		 *	Global Shortcuts
@@ -190,7 +190,7 @@
 		 *
 		 * 	@package		requireX/extTypes
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		extTypes = (new (function(){
 			var self = this;
@@ -212,7 +212,7 @@
 		 *
 		 * 	@package		requireX/Class
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Class = function(){
 			return forEach(arguments,function(_,module){
@@ -250,7 +250,7 @@
 		 *
 		 * 	@package		requireX/Type
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Type = new Class({
 			/**
@@ -282,7 +282,7 @@
 		 *
 		 * 	@package		requireX/FlexString
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		FlexString = new Class({
 			/**
@@ -377,7 +377,7 @@
 		 *
 		 * 	@package		requireX/Url
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Url = new Class({
 			static : {
@@ -529,7 +529,7 @@
 		 *
 		 * 	@package		requireX/Exec
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Exec = new Class({
 			static : {
@@ -639,7 +639,7 @@
 		 *
 		 * 	@package		requireX/Instance
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Instance = new Class({
 			static : {
@@ -769,7 +769,7 @@
 		 *
 		 * 	@package		requireX/State
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		State = new Class({
 			/**
@@ -823,7 +823,7 @@
 		 *
 		 * 	@package		requireX/Promise
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Promise = new Class({
 			static : {
@@ -985,7 +985,7 @@
 		 *
 		 * 	@package		requireX/Core
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Core = new Class({
 			static : {
@@ -994,7 +994,7 @@
 				 *
 				 * 	@package		requireX/Core/argsHandler
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.2
+				 * 	@version		0.8.2.3
 				 */
 				argsHandler : new Class({
 					static : {
@@ -1118,7 +1118,7 @@
 				 *
 				 * 	@package		requireX/Core/load
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.2
+				 * 	@version		0.8.2.3
 				 */
 				load : new Class({
 					static : {
@@ -1141,7 +1141,7 @@
 										script.onerror = script.onload = script.onreadystatechange = null;
 										!!script.parentNode && script.parentNode.removeChild( script );
 										Core.loading = script = null;
-										dfd.complete(ctx.success = !failure && !(Core.browser.MSIE && /loaded/.test( state )));
+										dfd.complete(ctx.success = !failure);
 									}
 								},
 								onerror = function(_){
@@ -1238,7 +1238,7 @@
 										image.onload = image.onerror = image.onabort = null;
 										Core.loading = image = null;
 
-										dfd.complete(ctx.success = !failure && !(Core.browser.MSIE && /loaded/.test( state )));
+										dfd.complete(ctx.success = !failure);
 									}
 								},
 								onerror = function(_){
@@ -1300,7 +1300,7 @@
 		 *
 		 * 	@package		requireX/Context
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Context = new Class({
 			/**
@@ -1357,7 +1357,7 @@
 		 *
 		 * 	@package		requireX/Loader
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.2
+		 * 	@version		0.8.2.3
 		 */
 		Loader = new Class({
 			/**
