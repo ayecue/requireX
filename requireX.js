@@ -3,7 +3,7 @@
  *	--
  *
  *	@package			requireX
- *	@version 			0.8.2.3
+ *	@version 			0.8.2.4
  *	@author 			swe <soerenwehmeier@googlemail.com>
  *
  */
@@ -19,9 +19,9 @@
 		 *	General Globals
 		 */
 		funcs 	= ['require','define','isLoaded','isPending','waitForFiles'],
-		helper	= ['forEach','toArray','unite','extend','getFirstOfType','getType','Class','author','version'],
+		helper	= ['forEach','toArray','unite','extend','getFirstOfType','getType','Class','author','version','modules'],
 		author 	= 'swe',
-		version	= '0.8.2.3',
+		version	= '0.8.2.4',
 		
 		/**
 		 *	Global Shortcuts
@@ -33,6 +33,7 @@
 		intv 	= setInterval,
 		clIntv 	= clearInterval,
 		slice 	= [].slice,
+		modules = {},
 		
 		/**
 		 *	Retry amount
@@ -107,9 +108,11 @@
 		toArray = slice ? function(obj){
 			return slice.call(obj);
 		} : function(obj){
-			return forEach(obj,function(index,item){
-				this.result.unshift(item);
-			},[]);
+			var toSlice = [];
+
+			push.apply(toSlice,obj);
+			
+			return toSlice;
 		},
 		
 		/**
@@ -190,7 +193,7 @@
 		 *
 		 * 	@package		requireX/extTypes
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		extTypes = (new (function(){
 			var self = this;
@@ -212,7 +215,7 @@
 		 *
 		 * 	@package		requireX/Class
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Class = function(){
 			return forEach(arguments,function(_,module){
@@ -250,7 +253,7 @@
 		 *
 		 * 	@package		requireX/Type
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Type = new Class({
 			/**
@@ -282,7 +285,7 @@
 		 *
 		 * 	@package		requireX/FlexString
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		FlexString = new Class({
 			/**
@@ -377,7 +380,7 @@
 		 *
 		 * 	@package		requireX/Url
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Url = new Class({
 			static : {
@@ -529,7 +532,7 @@
 		 *
 		 * 	@package		requireX/Exec
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Exec = new Class({
 			static : {
@@ -639,7 +642,7 @@
 		 *
 		 * 	@package		requireX/Instance
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Instance = new Class({
 			static : {
@@ -769,7 +772,7 @@
 		 *
 		 * 	@package		requireX/State
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		State = new Class({
 			/**
@@ -823,7 +826,7 @@
 		 *
 		 * 	@package		requireX/Promise
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Promise = new Class({
 			static : {
@@ -985,7 +988,7 @@
 		 *
 		 * 	@package		requireX/Core
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Core = new Class({
 			static : {
@@ -994,7 +997,7 @@
 				 *
 				 * 	@package		requireX/Core/argsHandler
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.3
+				 * 	@version		0.8.2.4
 				 */
 				argsHandler : new Class({
 					static : {
@@ -1118,7 +1121,7 @@
 				 *
 				 * 	@package		requireX/Core/load
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.3
+				 * 	@version		0.8.2.4
 				 */
 				load : new Class({
 					static : {
@@ -1300,7 +1303,7 @@
 		 *
 		 * 	@package		requireX/Context
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Context = new Class({
 			/**
@@ -1357,7 +1360,7 @@
 		 *
 		 * 	@package		requireX/Loader
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.3
+		 * 	@version		0.8.2.4
 		 */
 		Loader = new Class({
 			/**
@@ -1446,7 +1449,9 @@
 			var options = Core.argsHandler.define(arguments);
 
 			if (options.create)
-			{			
+			{
+				var created;
+				
 				if (options.requires)
 				{
 					var loading = Core.loading,
@@ -1455,11 +1460,15 @@
 						},options.settings));
 					
 					return loading.toLoad = loader.dfd.then(function(){
-						Core.defined.set(loading.path,options.create.apply(loading,arguments));
+						created = options.create.apply(loading,arguments);
+						Core.defined.set(loading.path,created);
+						modules[loading.path.stack.file] = created;
 					});
 				}
 				
-				Core.defined.set(Core.loading.path,options.create.call(Core.loading));
+				created = options.create.call(Core.loading);
+				Core.defined.set(Core.loading.path,created);
+				modules[Core.loading.path.stack.file] = created;
 			}
 		}
 	}
@@ -1550,5 +1559,5 @@
 	}
 	
 	extend(global,unite(funcs,[requirePre,define,isPending,isLoaded,waitForFiles]));
-	extend(global[funcs[0]],unite(helper,[forEach,toArray,unite,extend,getFirstOfType,getType,Class,author,version]));
+	extend(global[funcs[0]],unite(helper,[forEach,toArray,unite,extend,getFirstOfType,getType,Class,author,version,modules]));
 })(this.window || this);
