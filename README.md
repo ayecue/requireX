@@ -1,6 +1,6 @@
 # requireX
 * Author: swe
-* Version: 0.8.2.2
+* Version: 0.8.2.5
 * Language: JavaScript
 
 ## Short Description:
