@@ -3,7 +3,7 @@
  *	--
  *
  *	@package			requireX
- *	@version 			0.8.2.4
+ *	@version 			0.8.2.5
  *	@author 			swe <soerenwehmeier@googlemail.com>
  *
  */
@@ -21,7 +21,7 @@
 		funcs 	= ['require','define','isLoaded','isPending','waitForFiles'],
 		helper	= ['forEach','toArray','unite','extend','getFirstOfType','getType','Class','author','version','modules'],
 		author 	= 'swe',
-		version	= '0.8.2.4',
+		version	= '0.8.2.5',
 		
 		/**
 		 *	Global Shortcuts
@@ -49,7 +49,7 @@
 		patternDirname	= /^([^?]*)\??(.*)/i,
 		patternFile		= /(?:\/|^)(.*?)\/?([^\/]+?)(?:\.([^\.]*))?$/,
 		patternCDir		= /^.*\/?\.{1,2}\//i,
-		patternExec 	= ['!([#\\-])([^;]+?);','g'],
+		patternExec 	= ['!(pull|[#\\-])([^;]*?);','g'],
 		
 		/**
 		 *	Static Functions
@@ -193,7 +193,7 @@
 		 *
 		 * 	@package		requireX/extTypes
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		extTypes = (new (function(){
 			var self = this;
@@ -215,7 +215,7 @@
 		 *
 		 * 	@package		requireX/Class
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Class = function(){
 			return forEach(arguments,function(_,module){
@@ -233,12 +233,14 @@
 						return create.apply(this,arguments);
 					};
 					
+					module.create = null;
 					delete module.create;
 				}
 				
 				if (module.static)
 				{
 					extend(this.result,module.static);
+					module.static = null;
 					delete module.static;
 				}
 				
@@ -253,7 +255,7 @@
 		 *
 		 * 	@package		requireX/Type
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Type = new Class({
 			/**
@@ -277,6 +279,13 @@
 					func = this.handler[type];
 					
 				return func ? func(obj) : type;
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.handler = null;
 			}
 		}),
 	
@@ -285,7 +294,7 @@
 		 *
 		 * 	@package		requireX/FlexString
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		FlexString = new Class({
 			/**
@@ -372,6 +381,13 @@
 			 */
 			morph : function(fstring){
 				fstring instanceof FlexString && (this.stack = fstring.stack.concat(this.stack));
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.stack = null;
 			}
 		}),
 		
@@ -380,7 +396,7 @@
 		 *
 		 * 	@package		requireX/Url
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Url = new Class({
 			static : {
@@ -524,6 +540,14 @@
 			 */
 			refresh : function(){
 				this.stack.uri.push('_='+(new Date().getTime()));
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.uri = null;
+				this.dir = null;
 			}
 		}),
 	
@@ -532,7 +556,7 @@
 		 *
 		 * 	@package		requireX/Exec
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Exec = new Class({
 			static : {
@@ -633,6 +657,22 @@
 					
 					return result;
 				});
+			},
+			
+			/**
+			 * 	Automaticly extend all modules to global
+			 */
+			pullToGlobal : function(){
+				if (!!this.collection.pull){
+					extend(global,modules);
+				}
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.collection = null;
 			}
 		}),
 	
@@ -642,7 +682,7 @@
 		 *
 		 * 	@package		requireX/Instance
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Instance = new Class({
 			static : {
@@ -764,6 +804,16 @@
 						}
 					}
 				});
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.set = null;
+				this.is = null;
+				this.get = null;
+				this.clear = null;
 			}
 		}),
 	
@@ -772,7 +822,7 @@
 		 *
 		 * 	@package		requireX/State
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		State = new Class({
 			/**
@@ -818,6 +868,13 @@
 				},function(){
 					this.result.stack.shift().apply(null,args || []);
 				},this);
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.stack = null;
 			}
 		}),
 	
@@ -826,7 +883,7 @@
 		 *
 		 * 	@package		requireX/Promise
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Promise = new Class({
 			static : {
@@ -844,13 +901,16 @@
 						push = function(index,result){
 							stack[index] = result;
 
-							(stack.length == eof && forEach(stack,function(_,item){
+							if (stack.length == eof && forEach(stack,function(_,item){
 								if (item == null)
 								{
 									this.result = false;
 									this.skip = true;
 								}
-							},true)) && dfd.complete(true,stack);
+							},true)) {
+								dfd.complete(true,stack);
+								dfd.flush();
+							}
 						};
 					
 					forEach(args,function(index,item){
@@ -980,6 +1040,16 @@
 				});
 					
 				return dfd;
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.states = null;
+				this.then = null;
+				this.fail = null;
+				this.always = null;
 			}
 		}),
 	
@@ -988,7 +1058,7 @@
 		 *
 		 * 	@package		requireX/Core
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Core = new Class({
 			static : {
@@ -997,7 +1067,7 @@
 				 *
 				 * 	@package		requireX/Core/argsHandler
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.4
+				 * 	@version		0.8.2.5
 				 */
 				argsHandler : new Class({
 					static : {
@@ -1121,7 +1191,7 @@
 				 *
 				 * 	@package		requireX/Core/load
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.4
+				 * 	@version		0.8.2.5
 				 */
 				load : new Class({
 					static : {
@@ -1145,6 +1215,7 @@
 										!!script.parentNode && script.parentNode.removeChild( script );
 										Core.loading = script = null;
 										dfd.complete(ctx.success = !failure);
+										dfd.flush();
 									}
 								},
 								onerror = function(_){
@@ -1192,6 +1263,7 @@
 										Core.loading = style = null;
 
 										dfd.complete(ctx.success = !failure);
+										dfd.flush();
 									}
 								},
 								onerror = function(_){
@@ -1242,6 +1314,7 @@
 										Core.loading = image = null;
 
 										dfd.complete(ctx.success = !failure);
+										dfd.flush();
 									}
 								},
 								onerror = function(_){
@@ -1282,13 +1355,20 @@
 							Core.load[ctx.path.type()](ctx).then(function(){
 								ctx.variables = ctx.exec.getModuleVariables();
 								ctx.autoexecution = ctx.exec.doAutoExecution();
+								ctx.exec.pullToGlobal();
 							}).always(function(){
-								!!ctx.toLoad ? ctx.toLoad.always(function(){
-									ctx.toLoad = null;
-									delete ctx.toLoad;
-									
+								if (!!ctx.toLoad) {
+									ctx.toLoad.always(function(){
+										ctx.toLoad = null;
+										delete ctx.toLoad;
+										
+										dfd.complete(null,[ctx]);
+										dfd.flush();
+									});
+								} else {
 									dfd.complete(null,[ctx]);
-								}) : dfd.complete(null,[ctx]);
+									dfd.flush();
+								}
 							});
 						});
 						
@@ -1303,7 +1383,7 @@
 		 *
 		 * 	@package		requireX/Context
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Context = new Class({
 			/**
@@ -1352,6 +1432,16 @@
 				quickDelay(function(){
 					self.dfd.complete(true,[ref]);
 				});
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.dfd = null;
+				this.exec = null;
+				this.path = null;
+				this.settings = null;
 			}
 		}),
 		
@@ -1360,7 +1450,7 @@
 		 *
 		 * 	@package		requireX/Loader
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.4
+		 * 	@version		0.8.2.5
 		 */
 		Loader = new Class({
 			/**
@@ -1399,8 +1489,16 @@
 					self.dfd.complete.apply(self.dfd,forEach(arguments,function(_,item){
 						!item.success && (this.result[0] = false);
 						this.result[1].push(Core.defined.get(item.path) || item);
-					},[true,[]]))
+					},[true,[]]));
 				});
+			},
+			
+			/**
+			 *	Clear handles of this object
+			 */
+			flush : function(){
+				this.stack = null;
+				this.dfd = null;
 			}
 		});
 		
@@ -1420,6 +1518,8 @@
 		return loader.dfd.always(function(){
 			!!Core.master && Core.master.id == loader.dfd.id && (Core.master = null);
 			!!options.callback && options.callback.apply(null,arguments);
+			
+			loader.flush();
 		});
 	}
 	
@@ -1463,6 +1563,8 @@
 						created = options.create.apply(loading,arguments);
 						Core.defined.set(loading.path,created);
 						modules[loading.path.stack.file] = created;
+						
+						loader.flush();
 					});
 				}
 				
@@ -1548,7 +1650,7 @@
 					}
 					
 					this.result[1][index] = Core.defined.get(item) || Core.cache.get(item);
-				},[true,[]]))
+				},[true,[]]));
 			};
 		
 		pending.length 
