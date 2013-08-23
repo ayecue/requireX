@@ -3,7 +3,7 @@
  *	--
  *
  *	@package			requireX
- *	@version 			0.8.2.5
+ *	@version 			0.8.2.7
  *	@author 			swe <soerenwehmeier@googlemail.com>
  *
  */
@@ -19,9 +19,9 @@
 		 *	General Globals
 		 */
 		funcs 	= ['require','define','isLoaded','isPending','waitForFiles'],
-		helper	= ['forEach','toArray','unite','extend','getFirstOfType','getType','Class','author','version','modules'],
+		helper	= ['forEach','toArray','unite','extend','getFirstOfType','getType','Class','Promise','author','version','modules'],
 		author 	= 'swe',
-		version	= '0.8.2.5',
+		version	= '0.8.2.7',
 		
 		/**
 		 *	Global Shortcuts
@@ -193,7 +193,7 @@
 		 *
 		 * 	@package		requireX/extTypes
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		extTypes = (new (function(){
 			var self = this;
@@ -215,7 +215,7 @@
 		 *
 		 * 	@package		requireX/Class
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Class = function(){
 			return forEach(arguments,function(_,module){
@@ -255,7 +255,7 @@
 		 *
 		 * 	@package		requireX/Type
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Type = new Class({
 			/**
@@ -294,7 +294,7 @@
 		 *
 		 * 	@package		requireX/FlexString
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		FlexString = new Class({
 			/**
@@ -396,7 +396,7 @@
 		 *
 		 * 	@package		requireX/Url
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Url = new Class({
 			static : {
@@ -556,7 +556,7 @@
 		 *
 		 * 	@package		requireX/Exec
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Exec = new Class({
 			static : {
@@ -682,7 +682,7 @@
 		 *
 		 * 	@package		requireX/Instance
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Instance = new Class({
 			static : {
@@ -822,7 +822,7 @@
 		 *
 		 * 	@package		requireX/State
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		State = new Class({
 			/**
@@ -883,7 +883,7 @@
 		 *
 		 * 	@package		requireX/Promise
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Promise = new Class({
 			static : {
@@ -1058,7 +1058,7 @@
 		 *
 		 * 	@package		requireX/Core
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Core = new Class({
 			static : {
@@ -1067,7 +1067,7 @@
 				 *
 				 * 	@package		requireX/Core/argsHandler
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.5
+				 * 	@version		0.8.2.7
 				 */
 				argsHandler : new Class({
 					static : {
@@ -1191,7 +1191,7 @@
 				 *
 				 * 	@package		requireX/Core/load
 				 * 	@author			swe <soerenwehmeier@googlemail.com>
-				 * 	@version		0.8.2.5
+				 * 	@version		0.8.2.7
 				 */
 				load : new Class({
 					static : {
@@ -1352,13 +1352,13 @@
 								return dfd.complete(ctx.success = false,[ctx]);
 							}
 
-							Core.load[ctx.path.type()](ctx).then(function(){
-								ctx.variables = ctx.exec.getModuleVariables();
-								ctx.autoexecution = ctx.exec.doAutoExecution();
-								ctx.exec.pullToGlobal();
-							}).always(function(){
+							Core.load[ctx.path.type()](ctx).always(function(){
 								if (!!ctx.toLoad) {
 									ctx.toLoad.always(function(){
+										ctx.variables = ctx.exec.getModuleVariables();
+										ctx.autoexecution = ctx.exec.doAutoExecution();
+										ctx.exec.pullToGlobal();
+									
 										ctx.toLoad = null;
 										delete ctx.toLoad;
 										
@@ -1366,6 +1366,10 @@
 										dfd.flush();
 									});
 								} else {
+									ctx.variables = ctx.exec.getModuleVariables();
+									ctx.autoexecution = ctx.exec.doAutoExecution();
+									ctx.exec.pullToGlobal();
+								
 									dfd.complete(null,[ctx]);
 									dfd.flush();
 								}
@@ -1383,7 +1387,7 @@
 		 *
 		 * 	@package		requireX/Context
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Context = new Class({
 			/**
@@ -1450,7 +1454,7 @@
 		 *
 		 * 	@package		requireX/Loader
 		 * 	@author			swe <soerenwehmeier@googlemail.com>
-		 * 	@version		0.8.2.5
+		 * 	@version		0.8.2.7
 		 */
 		Loader = new Class({
 			/**
@@ -1661,5 +1665,5 @@
 	}
 	
 	extend(global,unite(funcs,[requirePre,define,isPending,isLoaded,waitForFiles]));
-	extend(global[funcs[0]],unite(helper,[forEach,toArray,unite,extend,getFirstOfType,getType,Class,author,version,modules]));
+	extend(global[funcs[0]],unite(helper,[forEach,toArray,unite,extend,getFirstOfType,getType,Class,Promise,author,version,modules]));
 })(this.window || this);
